@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ps -ef|grep java|grep rc-analysis.jar|awk '{print $2}'|while read pid
+do
+   kill $pid
+done

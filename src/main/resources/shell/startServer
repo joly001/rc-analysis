@@ -1,0 +1,8 @@
+#!/bin/sh
+
+JAVA_OPTIONS="${JAVA_OPTIONS} -Dfile.encoding=UTF-8"
+JAVA_VM="-server"
+MEM_ARGS="-Xms2048m -Xmx2048m"
+APP_HOME=/home/rc/rc-analysis
+
+nohup java ${JAVA_VM} ${MEM_ARGS} ${JAVA_OPTIONS} -jar $APP_HOME/rc-analysis.jar --spring.config.name=application-test 1>>$APP_HOME/rc-analysis.out 2>&1 &
