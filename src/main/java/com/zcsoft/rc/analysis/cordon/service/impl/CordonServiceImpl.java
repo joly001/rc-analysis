@@ -2,6 +2,7 @@ package com.zcsoft.rc.analysis.cordon.service.impl;
 
 import com.zcsoft.rc.analysis.cordon.dao.CordonDAO;
 import com.zcsoft.rc.analysis.cordon.service.CordonService;
+import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcRsp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,15 @@ public class CordonServiceImpl implements CordonService {
 
     private CordonDAO cordonDAO;
 
+    private WorkWarningService workWarningService;
+
     @Resource
     public void setCordonDAO(CordonDAO cordonDAO) {
         this.cordonDAO = cordonDAO;
+    }
+    @Resource
+    public void setWorkWarningService(WorkWarningService workWarningService) {
+        this.workWarningService = workWarningService;
     }
 
     @Override
