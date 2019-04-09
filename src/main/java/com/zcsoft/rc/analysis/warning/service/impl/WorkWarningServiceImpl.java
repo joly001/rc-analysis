@@ -5,6 +5,8 @@ import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.machinery.dao.MachineryDAO;
 import com.zcsoft.rc.machinery.model.entity.Machinery;
+import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
+import com.zcsoft.rc.mileage.model.entity.WorkSegment;
 import com.zcsoft.rc.user.dao.OrganizationDAO;
 import com.zcsoft.rc.user.dao.UserDAO;
 import com.zcsoft.rc.user.model.entity.Organization;
@@ -19,6 +21,7 @@ import javax.annotation.Resource;
 public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService {
 	
 	private WorkWarningDAO workWarningDAO;
+	private WorkSegmentDAO workSegmentDAO;
 	private UserDAO userDAO;
 	private MachineryDAO machineryDAO;
 	private OrganizationDAO organizationDAO;
@@ -27,6 +30,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	public void setWorkWarningDAO(WorkWarningDAO workWarningDAO) {
 		super.setBaseDAO(workWarningDAO);
 		this.workWarningDAO = workWarningDAO;
+	}
+	@Resource
+	public void setWorkSegmentDAO(WorkSegmentDAO workSegmentDAO) {
+		this.workSegmentDAO = workSegmentDAO;
 	}
 	@Resource
 	public void setUserDAO(UserDAO userDAO) {
@@ -51,14 +58,31 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	}
 
 	@Override
-	public void addCordonWarning(Double longitude, Double latitude, String type, String id) {
+	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
+
+		WorkSegment workSegment = workSegmentDAO.queryByStartLongitudeEndLongitude(longitude);
+
+		if(workSegment == null) {
+			logger.error("workSegment is null, longitude:{}", longitude);
+			return;
+		}
 
 		User user;
 		if(User.BUILDER_USER_TYPE_LOCOMOTIVE.equals(type)) {
 			Machinery machinery = machineryDAO.queryById(id);
 			user = userDAO.queryById(machinery.getUserId());
+
+			if(machinery == null) {
+				logger.error("machinery is null, machineryId:{}", id);
+				return;
+			}
 		} else {
 			user = userDAO.queryById(id);
+		}
+
+		if(user == null) {
+			logger.error("user is null, userId:{}", id);
+			return;
 		}
 
 		Organization organization = organizationDAO.queryById(user.getOrganizationId());
@@ -71,6 +95,16 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		WorkWarning workWarning = new WorkWarning();
+		workWarning.setMileageSegmentId(workSegment.getMileageSegmentId());
+		workWarning.setMileageSegmentName(workSegment.getMileageSegmentName());
+
+		workWarning.setWorkSegmentId(workSegment.getId());
+		workWarning.setWorkSegmentName(workSegment.getWorkSegmentName());
+		workWarning.setWorkSegmentStartLongitude(workSegment.getStartLongitude());
+		workWarning.setWorkSegmentStartLatitude(workSegment.getStartLatitude());
+		workWarning.setWorkSegmentEndLongitude(workSegment.getEndLongitude());
+		workWarning.setWorkSegmentEndLatitude(workSegment.getEndLatitude());
+
 		workWarning.setUserId(user.getId());
 		workWarning.setBuilderUserType(user.getBuilderUserType());
 		workWarning.setDepId(dep.getId());

@@ -9,11 +9,11 @@ public interface WorkWarningService extends IBaseService<WorkWarning, String> {
 
     /**
      * 添加接近警告线警告
+     * @param id
+     * @param type
      * @param longitude
      * @param latitude
-     * @param type
-     * @param id
      */
-    void addCordonWarning(Double longitude, Double latitude, String type, String id);
+    void addCordonWarning(String id,String type,Double longitude, Double latitude);
 	
 }

@@ -32,6 +32,8 @@ public class CordonServiceImpl implements CordonService {
     public void analysis(CurrentRcRsp rcRsp) {
         String id = cordonDAO.near("geometry",rcRsp.getLongitude(),rcRsp.getLatitude(),1.2,0);
 
-        logger.info("id:{}", id);
+        if(id != null) {
+            workWarningService.addCordonWarning(rcRsp.getId() ,rcRsp.getType(), rcRsp.getLongitude(), rcRsp.getLatitude());
+        }
     }
 }
