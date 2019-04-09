@@ -79,17 +79,17 @@ public class PersistenceComponentsAutoconfigure {
         poolProperties.setTestWhileIdle(dataSourcePoolConfig.isTestWhileIdle());									// 空闲检验
         poolProperties.setValidationQuery(dataSourcePoolConfig.getValidationQuery());
 
-        org.apache.tomcat.jdbc.pool.DataSource opayDataSource = new org.apache.tomcat.jdbc.pool.DataSource();
-        opayDataSource.setPoolProperties(poolProperties);
+        org.apache.tomcat.jdbc.pool.DataSource dataSource = new org.apache.tomcat.jdbc.pool.DataSource();
+        dataSource.setPoolProperties(poolProperties);
 
-        return opayDataSource;
+        return dataSource;
 
     }
 
     @Bean(name="dataSourceTransactionManager")
-    public DataSourceTransactionManager createDataSourceTransactionManager(DataSource opayDataSource) {
+    public DataSourceTransactionManager createDataSourceTransactionManager(DataSource dataSource) {
         DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
-        dataSourceTransactionManager.setDataSource(opayDataSource);
+        dataSourceTransactionManager.setDataSource(dataSource);
 
         return dataSourceTransactionManager;
     }

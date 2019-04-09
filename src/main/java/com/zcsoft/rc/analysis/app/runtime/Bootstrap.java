@@ -42,7 +42,7 @@ public class Bootstrap {
     @EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
     @EnableAutoConfiguration
     @ComponentScan(
-            basePackages = "com.zcsoft.rc.analysis.*.dao,com.zcsoft.rc.analysis.*.service,com.zcsoft.rc.analysis.*.scheduled,com.zcsoft.rc.analysis.app.autoconfigure,com.sharingif.cube.spring.boot"
+            basePackages = "com.zcsoft.rc.*.dao,com.zcsoft.rc.analysis.*.dao,com.zcsoft.rc.analysis.*.service,com.zcsoft.rc.analysis.*.scheduled,com.zcsoft.rc.analysis.app.autoconfigure,com.sharingif.cube.spring.boot"
             ,nameGenerator = ExtendedAnnotationBeanNameGenerator.class
             ,useDefaultFilters= false
             ,includeFilters={
