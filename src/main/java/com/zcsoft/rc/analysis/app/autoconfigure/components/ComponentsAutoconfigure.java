@@ -3,6 +3,7 @@ package com.zcsoft.rc.analysis.app.autoconfigure.components;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
@@ -14,6 +15,17 @@ public class ComponentsAutoconfigure {
         threadPoolTaskScheduler.setPoolSize(100);
         threadPoolTaskScheduler.setThreadNamePrefix("taskScheduler-");
         return threadPoolTaskScheduler;
+    }
+
+    @Bean("workThreadPoolTaskExecutor")
+    public ThreadPoolTaskExecutor createThreadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+
+        threadPoolTaskExecutor.setCorePoolSize(200);
+        threadPoolTaskExecutor.setMaxPoolSize(200);
+        threadPoolTaskExecutor.setThreadNamePrefix("workThreadPoolTaskExecutor-");
+
+        return threadPoolTaskExecutor;
     }
 
 }

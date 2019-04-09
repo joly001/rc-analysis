@@ -14,7 +14,10 @@
 
     <maven.project.com.sharingif.cube.version>4.0.0-RELEASE</maven.project.com.sharingif.cube.version>
 
-    <maven.project.springframework.groupId>org.springframework</maven.project.springframework.groupId>
+    <maven.project.com.sharingif.cube.spring.boot.version>4.0.0-RELEASE</maven.project.com.sharingif.cube.spring.boot.version>
+
+    <maven.cube.groupId>com.sharingif.cube</maven.cube.groupId>
+    <maven.cube.boot.groupId>com.sharingif.cube.spring.boot</maven.cube.boot.groupId>
     <maven.project.org.springframework.boot.groupId>org.springframework.boot</maven.project.org.springframework.boot.groupId>
     <maven.project.org.springframework.boot.release.version>1.5.3.RELEASE</maven.project.org.springframework.boot.release.version>
   </properties>
@@ -29,8 +32,20 @@
     </dependency>
 
     <dependency>
+      <groupId>${maven.cube.groupId}</groupId>
+      <artifactId>com.sharingif.cube.communication.http.apache</artifactId>
+      <version>${maven.project.com.sharingif.cube.spring.boot.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rc-common</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>rc-collectors-api</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
