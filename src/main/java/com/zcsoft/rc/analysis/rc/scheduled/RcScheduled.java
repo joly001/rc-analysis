@@ -40,7 +40,7 @@ public class RcScheduled {
 
         Map<String,CurrentRcRsp> rcMap = currentRcMapRsp.getRcMap();
 
-        if(rcMap == null) {
+        if(rcMap == null || rcMap.isEmpty()) {
             return;
         }
 

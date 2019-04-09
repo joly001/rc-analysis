@@ -16,6 +16,8 @@ import java.io.IOException;
 
 @Configuration
 public class MyBatisConfigurationAutoconfigure {
+
+
 	
 	@Bean(name="sqlSessionFactory")
 	public SqlSessionFactoryBean getSqlSessionFactory(DataSource dataSource, PaginationInterceptor paginationInterceptor) throws IOException {

@@ -44,7 +44,7 @@
     </dependency>
     <dependency>
       <groupId>${maven.cube.boot.groupId}</groupId>
-      <artifactId>com.sharingif.cube.spring.boot.tomcat</artifactId>
+      <artifactId>com.sharingif.cube.spring.boot.security</artifactId>
       <version>${maven.project.com.sharingif.cube.spring.boot.version}</version>
     </dependency>
 
@@ -64,6 +64,12 @@
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver</artifactId>
       <version>3.6.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
+      <version>8.5.14</version>
     </dependency>
 
     <dependency>
