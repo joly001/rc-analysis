@@ -30,10 +30,10 @@ public class CordonServiceImpl implements CordonService {
 
     @Override
     public void analysis(CurrentRcRsp rcRsp) {
-        String id = cordonDAO.near("geometry",rcRsp.getLongitude(),rcRsp.getLatitude(),1.2,0);
+        String nearDataId = cordonDAO.near("geometry",rcRsp.getLongitude(),rcRsp.getLatitude(),1.2,0);
 
-        if(id != null) {
-
+        if(nearDataId == null) {
+            workWarningService.finishCordonWarning(rcRsp.getId());
         } else {
             workWarningService.addCordonWarning(rcRsp.getId() ,rcRsp.getType(), rcRsp.getLongitude(), rcRsp.getLatitude());
         }

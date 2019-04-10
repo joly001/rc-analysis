@@ -17,6 +17,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,6 +66,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	@Override
 	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
 
+		if(rcMap.get(id) != null) {
+			return;
+		}
+
 		WorkSegment workSegment = workSegmentDAO.queryByStartLongitudeEndLongitude(longitude);
 
 		if(workSegment == null) {
@@ -100,6 +105,9 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		WorkWarning workWarning = new WorkWarning();
+
+		workWarning.setWorkWarningId(id);
+
 		workWarning.setMileageSegmentId(workSegment.getMileageSegmentId());
 		workWarning.setMileageSegmentName(workSegment.getMileageSegmentName());
 
@@ -130,25 +138,29 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	}
 
 	@Override
-	public void finishCordonWarning(String id, String type) {
+	public void finishCordonWarning(String id) {
 		if(rcMap.get(id) == null) {
 			return;
 		}
 
-		String userId = id;
-		if(User.BUILDER_USER_TYPE_LOCOMOTIVE.equals(type)) {
-			Machinery machinery = machineryDAO.queryById(id);
-			User user = userDAO.queryById(machinery.getUserId());
-			userId = user.getId();
-		}
-
-		workWarningDAO.updateStatusByUserIdStatus(userId, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
+		workWarningDAO.updateStatusByWorkWarningIdStatus(id, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
 
 		rcMap.remove(id);
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		WorkWarning queryWorkWarning = new WorkWarning();
+		queryWorkWarning.setStatus(WorkWarning.STATUS_CREATE);
 
+		List<WorkWarning> workWarningList = workWarningDAO.queryList(queryWorkWarning);
+
+		if(workWarningList == null || workWarningList.isEmpty()) {
+			return;
+		}
+
+		workWarningList.forEach(workWarning -> {
+			rcMap.put(workWarning.getWorkWarningId(), workWarning.getWorkWarningId());
+		});
 	}
 }

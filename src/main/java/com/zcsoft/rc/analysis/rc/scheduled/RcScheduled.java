@@ -34,7 +34,7 @@ public class RcScheduled {
         this.cordonService = cordonService;
     }
 
-    @Scheduled(fixedRate = 1000*10)
+    @Scheduled(fixedRate = 1000*1)
     public synchronized void analysis() {
         CurrentRcMapRsp currentRcMapRsp = currentRcApiService.all();
 

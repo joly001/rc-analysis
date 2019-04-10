@@ -17,10 +17,9 @@ public interface WorkWarningService extends IBaseService<WorkWarning, String> {
     void addCordonWarning(String id, String type,  Double longitude, Double latitude);
 
     /**
-     *
+     * 关闭警告
      * @param id
-     * @param type
      */
-    void finishCordonWarning(String id, String type);
+    void finishCordonWarning(String id);
 	
 }
