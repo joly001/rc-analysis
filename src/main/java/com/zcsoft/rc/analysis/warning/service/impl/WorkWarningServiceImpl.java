@@ -116,6 +116,9 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		workWarning.setStatus(WorkWarning.STATUS_CREATE);
 		workWarning.setType(WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE);
 
+		workWarning.setLongitude(longitude);
+		workWarning.setLatitude(latitude);
+
 		workWarningDAO.insert(workWarning);
 	}
 }
