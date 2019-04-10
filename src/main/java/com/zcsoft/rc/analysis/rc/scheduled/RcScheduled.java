@@ -1,6 +1,9 @@
 package com.zcsoft.rc.analysis.rc.scheduled;
 
+import com.sharingif.cube.core.util.StringUtils;
 import com.zcsoft.rc.analysis.cordon.service.CordonService;
+import com.zcsoft.rc.analysis.warning.service.WarningService;
+import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcMapRsp;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcRsp;
 import com.zcsoft.rc.collectors.api.rc.service.CurrentRcApiService;
@@ -20,6 +23,7 @@ public class RcScheduled {
     private ThreadPoolTaskExecutor workThreadPoolTaskExecutor;
     private CurrentRcApiService currentRcApiService;
     private CordonService cordonService;
+    private WarningService warningService;
 
     @Resource
     public void setWorkThreadPoolTaskExecutor(ThreadPoolTaskExecutor workThreadPoolTaskExecutor) {
@@ -33,9 +37,17 @@ public class RcScheduled {
     public void setCordonService(CordonService cordonService) {
         this.cordonService = cordonService;
     }
+    @Resource
+    public void setWarningService(WarningService warningService) {
+        this.warningService = warningService;
+    }
 
     @Scheduled(fixedRate = 1000*1)
     public synchronized void analysis() {
+        if(!warningService.isOpen()) {
+            return;
+        }
+
         CurrentRcMapRsp currentRcMapRsp = currentRcApiService.all();
 
         Map<String,CurrentRcRsp> rcMap = currentRcMapRsp.getRcMap();
@@ -45,11 +57,7 @@ public class RcScheduled {
         }
 
         rcMap.forEach((id, currentRcRsp) -> {
-            String type = currentRcRsp.getType();
-            if(!type.equals(User.BUILDER_USER_TYPE_TRAIN)
-                    && !type.equals(User.BUILDER_USER_TYPE_WORK)
-                    && !type.equals(User.BUILDER_USER_TYPE_OTHER)
-            ){
+            if(!StringUtils.isTrimEmpty(currentRcRsp.getWristStrapCode())){
                 workThreadPoolTaskExecutor.execute(new Runnable() {
                     @Override
                     public void run() {

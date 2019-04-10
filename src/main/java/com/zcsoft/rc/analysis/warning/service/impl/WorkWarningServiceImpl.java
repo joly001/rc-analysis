@@ -148,12 +148,32 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		rcMap.remove(id);
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	protected List<WorkWarning> getCreateStatus() {
 		WorkWarning queryWorkWarning = new WorkWarning();
 		queryWorkWarning.setStatus(WorkWarning.STATUS_CREATE);
 
 		List<WorkWarning> workWarningList = workWarningDAO.queryList(queryWorkWarning);
+
+		return workWarningList;
+
+	}
+
+	@Override
+	public void finishAll() {
+		List<WorkWarning> workWarningList = getCreateStatus();
+
+		if(workWarningList == null || workWarningList.isEmpty()) {
+			return;
+		}
+
+		workWarningList.forEach(workWarning -> {
+			finishCordonWarning(workWarning.getWorkWarningId());
+		});
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		List<WorkWarning> workWarningList = getCreateStatus();
 
 		if(workWarningList == null || workWarningList.isEmpty()) {
 			return;

@@ -21,5 +21,10 @@ public interface WorkWarningService extends IBaseService<WorkWarning, String> {
      * @param id
      */
     void finishCordonWarning(String id);
+
+    /**
+     * 关闭所有警告数据
+     */
+    void finishAll();
 	
 }
