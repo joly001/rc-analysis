@@ -6,12 +6,14 @@ import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDataTimeDAO;
 import com.zcsoft.rc.mileage.model.entity.WorkSegment;
 import com.zcsoft.rc.mileage.model.entity.WorkSegmentDataTime;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.*;
 import java.util.Date;
 import java.util.List;
 
+@Service
 public class WarningServiceImpl implements WarningService {
 
     private boolean isOpen = false;
