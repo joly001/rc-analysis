@@ -47,11 +47,6 @@
       <artifactId>com.sharingif.cube.spring.boot.communication.http</artifactId>
       <version>${maven.project.com.sharingif.cube.spring.boot.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${maven.cube.boot.groupId}</groupId>
-      <artifactId>com.sharingif.cube.spring.boot.security</artifactId>
-      <version>${maven.project.com.sharingif.cube.spring.boot.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -125,7 +120,7 @@
           <fork>true</fork>
           <addResources>true</addResources>
           <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
-          <mainClass>com.zcsoft.rc.bms.app.runtime.Bootstrap</mainClass>
+          <mainClass>com.zcsoft.rc.analysis.app.runtime.Bootstrap</mainClass>
         </configuration>
         <executions>
           <execution>
