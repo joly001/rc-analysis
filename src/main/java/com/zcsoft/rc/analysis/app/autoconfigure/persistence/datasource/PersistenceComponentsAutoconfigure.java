@@ -1,7 +1,9 @@
 package com.zcsoft.rc.analysis.app.autoconfigure.persistence.datasource;
 
 import com.sharingif.cube.persistence.database.DataSourcePoolConfig;
+import com.sharingif.cube.security.binary.Base64Coder;
 import com.sharingif.cube.security.confidentiality.encrypt.TextEncryptor;
+import com.sharingif.cube.security.confidentiality.encrypt.aes.AESECBEncryptor;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.sql.DataSource;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 
 @Configuration
@@ -39,6 +42,14 @@ public class PersistenceComponentsAutoconfigure {
         dataSourcePoolConfig.setMinIdle(minIdle);
 
         return dataSourcePoolConfig;
+    }
+
+    @Bean("propertyTextEncryptor")
+    public TextEncryptor createPropertyTextEncryptor(@Value("${property.key}") String key, Base64Coder base64Coder) throws UnsupportedEncodingException {
+        byte[] keysByte = base64Coder.decode(key);
+        AESECBEncryptor encryptor = new AESECBEncryptor(keysByte, base64Coder);
+
+        return encryptor;
     }
 
     @Bean(name="dataSource")
