@@ -13,13 +13,18 @@ import com.zcsoft.rc.user.model.entity.Organization;
 import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.dao.WorkWarningDAO;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService {
-	
+public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService, InitializingBean {
+
+	private Map<String, String> rcMap = new ConcurrentHashMap<>(200);
+
 	private WorkWarningDAO workWarningDAO;
 	private WorkSegmentDAO workSegmentDAO;
 	private UserDAO userDAO;
@@ -120,5 +125,30 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		workWarning.setLatitude(latitude);
 
 		workWarningDAO.insert(workWarning);
+
+		rcMap.put(id, id);
+	}
+
+	@Override
+	public void finishCordonWarning(String id, String type) {
+		if(rcMap.get(id) == null) {
+			return;
+		}
+
+		String userId = id;
+		if(User.BUILDER_USER_TYPE_LOCOMOTIVE.equals(type)) {
+			Machinery machinery = machineryDAO.queryById(id);
+			User user = userDAO.queryById(machinery.getUserId());
+			userId = user.getId();
+		}
+
+		workWarningDAO.updateStatusByUserIdStatus(userId, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
+
+		rcMap.remove(id);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+
 	}
 }

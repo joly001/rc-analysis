@@ -14,6 +14,13 @@ public interface WorkWarningService extends IBaseService<WorkWarning, String> {
      * @param longitude
      * @param latitude
      */
-    void addCordonWarning(String id,String type,Double longitude, Double latitude);
+    void addCordonWarning(String id, String type,  Double longitude, Double latitude);
+
+    /**
+     *
+     * @param id
+     * @param type
+     */
+    void finishCordonWarning(String id, String type);
 	
 }
