@@ -62,7 +62,7 @@ public class NoticeScheduled {
         });
     }
 
-    @Scheduled(fixedRate = 1000*1)
+    @Scheduled(fixedRate = 1000*60*3)
     public synchronized void addCordonNotice() {
         List<WorkWarning> workWarningList = workWarningService.getCreateStatus();
 
