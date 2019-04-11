@@ -83,7 +83,7 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     @Override
     public List<Notice> getUntreatedNotice() {
         Notice queryNotice = new Notice();
-        queryNotice.setStatus(Notice.STATUS_PROCESSING);
+        queryNotice.setStatus(Notice.STATUS_UNTREATED);
 
         return noticeDAO.queryList(queryNotice);
     }

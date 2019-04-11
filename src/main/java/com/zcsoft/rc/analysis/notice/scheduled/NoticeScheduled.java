@@ -45,7 +45,7 @@ public class NoticeScheduled {
             return;
         }
 
-        noticeList.forEach(notice -> {
+        for(Notice notice : noticeList) {
             try {
                 noticeService.updateStatusToProcessing(notice.getId());
 
@@ -59,7 +59,7 @@ public class NoticeScheduled {
                 logger.error("send notice error",e);
                 noticeService.updateStatusToUntreated(notice.getId());
             }
-        });
+        }
     }
 
     @Scheduled(fixedRate = 1000*60*3)
@@ -70,14 +70,14 @@ public class NoticeScheduled {
             return;
         }
 
-        workWarningList.forEach(workWarning -> {
+        for(WorkWarning workWarning : workWarningList) {
             workThreadPoolTaskExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     noticeService.addCordonNotice(workWarning);
                 }
             });
-        });
+        }
 
     }
 
