@@ -4,8 +4,16 @@ package com.zcsoft.rc.analysis.warning.service;
 import com.sharingif.cube.support.service.base.IBaseService;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
 
+import java.util.List;
+
 
 public interface WorkWarningService extends IBaseService<WorkWarning, String> {
+
+    /**
+     * 获取创建状态记录
+     * @return
+     */
+    List<WorkWarning> getCreateStatus();
 
     /**
      * 添加接近警告线警告

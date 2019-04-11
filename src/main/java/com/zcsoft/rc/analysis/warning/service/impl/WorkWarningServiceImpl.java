@@ -148,7 +148,8 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		rcMap.remove(id);
 	}
 
-	protected List<WorkWarning> getCreateStatus() {
+	@Override
+	public List<WorkWarning> getCreateStatus() {
 		WorkWarning queryWorkWarning = new WorkWarning();
 		queryWorkWarning.setStatus(WorkWarning.STATUS_CREATE);
 
