@@ -2,6 +2,7 @@ package com.zcsoft.rc.analysis.cordon.service.impl;
 
 import com.zcsoft.rc.analysis.cordon.dao.CordonDAO;
 import com.zcsoft.rc.analysis.cordon.service.CordonService;
+import com.zcsoft.rc.analysis.sys.service.SysParameterService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcRsp;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public class CordonServiceImpl implements CordonService {
     private CordonDAO cordonDAO;
 
     private WorkWarningService workWarningService;
+    private SysParameterService sysParameterService;
 
     @Resource
     public void setCordonDAO(CordonDAO cordonDAO) {
@@ -27,10 +29,14 @@ public class CordonServiceImpl implements CordonService {
     public void setWorkWarningService(WorkWarningService workWarningService) {
         this.workWarningService = workWarningService;
     }
+    @Resource
+    public void setSysParameterService(SysParameterService sysParameterService) {
+        this.sysParameterService = sysParameterService;
+    }
 
     @Override
     public void analysis(CurrentRcRsp rcRsp) {
-        String nearDataId = cordonDAO.near("geometry",rcRsp.getLongitude(),rcRsp.getLatitude(),1.2,0);
+        String nearDataId = cordonDAO.near("geometry",rcRsp.getLongitude(),rcRsp.getLatitude(),sysParameterService.getCordon(),0);
 
         if(nearDataId == null) {
             workWarningService.finishCordonWarning(rcRsp.getId());
