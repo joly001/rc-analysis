@@ -47,7 +47,7 @@ public class NoticeScheduled {
 
         noticeList.forEach(notice -> {
             try {
-                noticeService.updateStatusToUntreated(notice.getId());
+                noticeService.updateStatusToProcessing(notice.getId());
 
                 workThreadPoolTaskExecutor.execute(new Runnable() {
                     @Override

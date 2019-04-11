@@ -1,11 +1,14 @@
 package com.zcsoft.rc.analysis.notice.service.impl;
 
+import com.tencent.xinge.XingeApp;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
 import com.zcsoft.rc.notice.dao.NoticeDAO;
 import com.zcsoft.rc.notice.model.entity.Notice;
 import com.zcsoft.rc.user.dao.UserDAO;
 import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -19,7 +22,9 @@ import java.util.Locale;
 @Service
 public class NoticeServiceImpl implements NoticeService, ApplicationContextAware {
 
-    private String xingeAppId;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private long xingeAppId;
     private String xingeSecretKey;
 
     private NoticeDAO noticeDAO;
@@ -28,7 +33,7 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     private ApplicationContext applicationContext;
 
     @Value("${xinge.app.id}")
-    public void setXingeAppId(String xingeAppId) {
+    public void setXingeAppId(long xingeAppId) {
         this.xingeAppId = xingeAppId;
     }
     @Value("${xinge.secret.key}")
@@ -86,7 +91,13 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     @Override
     public void send(Notice notice) {
 
+        if(User.OPERATING_SYSTEM_ANDROID.equals(notice.getOperatingSystem())) {
+            XingeApp.pushTokenAndroid(xingeAppId, xingeSecretKey, null, notice.getContent(), notice.getMessagingToken());
+        }
 
+        if (User.OPERATINGSYSTEM_IOS.equals(notice.getOperatingSystem())) {
+            XingeApp.pushTokenIos(xingeAppId, xingeSecretKey, notice.getContent(), notice.getMessagingToken(), XingeApp.IOSENV_PROD);
+        }
 
         updateStatusToSuccess(notice.getId());
     }
@@ -99,6 +110,7 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
 
         Notice notice = new Notice();
         notice.setType(Notice.TYPE_CORDON);
+        notice.setOperatingSystem(user.getOperatingSystem());
         notice.setContent(content);
         notice.setDataId(workWarning.getWorkWarningId());
         notice.setMessagingToken(user.getMessagingToken());
