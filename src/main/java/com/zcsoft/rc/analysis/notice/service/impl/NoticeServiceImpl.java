@@ -7,6 +7,7 @@ import com.zcsoft.rc.user.dao.UserDAO;
 import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,22 @@ import java.util.Locale;
 @Service
 public class NoticeServiceImpl implements NoticeService, ApplicationContextAware {
 
+    private String xingeAppId;
+    private String xingeSecretKey;
+
     private NoticeDAO noticeDAO;
     private UserDAO userDAO;
 
     private ApplicationContext applicationContext;
 
-
+    @Value("${xinge.app.id}")
+    public void setXingeAppId(String xingeAppId) {
+        this.xingeAppId = xingeAppId;
+    }
+    @Value("${xinge.secret.key}")
+    public void setXingeSecretKey(String xingeSecretKey) {
+        this.xingeSecretKey = xingeSecretKey;
+    }
     @Resource
     public void setNoticeDAO(NoticeDAO noticeDAO) {
         this.noticeDAO = noticeDAO;
@@ -74,6 +85,8 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
 
     @Override
     public void send(Notice notice) {
+
+
 
         updateStatusToSuccess(notice.getId());
     }

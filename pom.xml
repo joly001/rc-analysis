@@ -65,13 +65,16 @@
       <artifactId>mongodb-driver</artifactId>
       <version>3.6.4</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
       <version>8.5.14</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.tencent.xinge</groupId>
+      <artifactId>PushJavaSDK</artifactId>
+      <version>1.0.0</version>
+    </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.el</artifactId>
