@@ -2,6 +2,7 @@ package com.zcsoft.rc.analysis.warning.service.impl;
 
 
 import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
+import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.machinery.dao.MachineryDAO;
 import com.zcsoft.rc.machinery.model.entity.Machinery;
@@ -24,13 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService, InitializingBean {
 
-	private Map<String, String> rcMap = new ConcurrentHashMap<>(200);
-
 	private WorkWarningDAO workWarningDAO;
 	private WorkSegmentDAO workSegmentDAO;
 	private UserDAO userDAO;
 	private MachineryDAO machineryDAO;
 	private OrganizationDAO organizationDAO;
+
+	private WarningService warningService;
 
 	@Resource
 	public void setWorkWarningDAO(WorkWarningDAO workWarningDAO) {
@@ -53,6 +54,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	public void setOrganizationDAO(OrganizationDAO organizationDAO) {
 		this.organizationDAO = organizationDAO;
 	}
+	@Resource
+	public void setWarningService(WarningService warningService) {
+		this.warningService = warningService;
+	}
 
 	public Organization getDep(String organizationId) {
 		Organization organization = organizationDAO.queryById(organizationId);
@@ -66,7 +71,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	@Override
 	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
 
-		if(rcMap.get(id) != null) {
+		if(warningService.getWarning(id) != null) {
 			return;
 		}
 
@@ -134,18 +139,18 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 		workWarningDAO.insert(workWarning);
 
-		rcMap.put(id, id);
+		warningService.addWarning(id, workWarning);
 	}
 
 	@Override
 	public void finishCordonWarning(String id) {
-		if(rcMap.get(id) == null) {
+		if(warningService.getWarning(id) == null) {
 			return;
 		}
 
 		workWarningDAO.updateStatusByWorkWarningIdStatus(id, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
 
-		rcMap.remove(id);
+		warningService.removeWarning(id);
 	}
 
 	@Override
@@ -181,7 +186,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		workWarningList.forEach(workWarning -> {
-			rcMap.put(workWarning.getWorkWarningId(), workWarning.getWorkWarningId());
+			warningService.addWarning(workWarning.getWorkWarningId(), workWarning);
 		});
 	}
 }

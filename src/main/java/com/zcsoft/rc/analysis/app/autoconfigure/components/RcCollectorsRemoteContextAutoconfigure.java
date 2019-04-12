@@ -8,6 +8,7 @@ import com.sharingif.cube.communication.remote.RemoteServices;
 import com.sharingif.cube.communication.transport.ProxyInterfaceHandlerMethodCommunicationTransportFactory;
 import com.sharingif.cube.communication.transport.transform.ProxyInterfaceHandlerMethodCommunicationTransform;
 import com.sharingif.cube.core.handler.chain.MultiHandlerMethodChain;
+import com.zcsoft.rc.collectors.api.warning.service.WarningApiService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,6 +60,7 @@ public class RcCollectorsRemoteContextAutoconfigure {
         List<String> services = new ArrayList<String>();
 
         services.add("com.zcsoft.rc.collectors.api.rc.service.CurrentRcApiService");
+        services.add("com.zcsoft.rc.collectors.api.warning.service.WarningApiService");
 
         RemoteServices remoteServices = new RemoteServices();
         remoteServices.setRequestContextResolver(handlerMethodCommunicationTransportRequestContextResolver);
