@@ -131,7 +131,7 @@ public class WarningServiceImpl implements WarningService, ApplicationContextAwa
         try {
 
             String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
-            String waringContent = applicationContext.getMessage(workWarning.getBuilderUserType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
+            String waringContent = applicationContext.getMessage("waring.content", new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
 
             Map<String, Object> waring = new HashMap<>();
             waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());
