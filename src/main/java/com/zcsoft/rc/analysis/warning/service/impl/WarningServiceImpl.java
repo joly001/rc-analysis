@@ -55,10 +55,6 @@ public class WarningServiceImpl implements WarningService, ApplicationContextAwa
         this.warningApiService = warningApiService;
     }
     @Resource
-    public void setOpen(boolean open) {
-        isOpen = open;
-    }
-    @Resource
     public void setJsonService(IJsonService jsonService) {
         this.jsonService = jsonService;
     }
