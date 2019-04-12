@@ -4,6 +4,7 @@ import com.sharingif.cube.components.json.IJsonService;
 import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.collectors.api.warning.entity.WarningCollectReq;
+import com.zcsoft.rc.collectors.api.warning.entity.WarningDeleteReq;
 import com.zcsoft.rc.collectors.api.warning.service.WarningApiService;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDataTimeDAO;
@@ -160,6 +161,15 @@ public class WarningServiceImpl implements WarningService, ApplicationContextAwa
     @Override
     public void removeWarning(String id) {
         warningMap.remove(id);
+
+        try {
+            WarningDeleteReq req = new WarningDeleteReq();
+            req.setId(id);
+
+            warningApiService.delete(req);
+        } catch (Exception e) {
+            logger.error("remove warning error", e);
+        }
     }
 
     @Override
