@@ -115,6 +115,7 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
         notice.setDataId(workWarning.getWorkWarningId());
         notice.setMessagingToken(user.getMessagingToken());
         notice.setStatus(Notice.STATUS_UNTREATED);
+        notice.setOperatingSystem(user.getOperatingSystem());
 
         noticeDAO.insert(notice);
     }
