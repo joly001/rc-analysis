@@ -1,9 +1,11 @@
 package com.zcsoft.rc.analysis.railway.service.impl;
 
 
+import com.sharingif.cube.core.util.StringUtils;
 import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
 import com.zcsoft.rc.analysis.app.components.LocationComponent;
 import com.zcsoft.rc.analysis.mileage.service.WorkSegmentService;
+import com.zcsoft.rc.analysis.railway.model.entity.WorkSegmentRailwayLines;
 import com.zcsoft.rc.analysis.railway.service.RailwayLinesService;
 import com.zcsoft.rc.analysis.sys.service.SysParameterService;
 import com.zcsoft.rc.analysis.warning.service.TrainWarningService;
@@ -16,13 +18,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, String> implements RailwayLinesService {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private Map<String, WorkSegmentRailwayLines> warningRailwayLinesListCache = new ConcurrentHashMap<>(20);
 
 	private RailwayLinesDAO railwayLinesDAO;
 	private SysParameterService sysParameterService;
@@ -52,10 +59,95 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		this.workSegmentService = workSegmentService;
 	}
 
-	protected void temporaryStation(CurrentRcRsp rcRsp, String direction) {
-		RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(rcRsp.getLongitude());
+	protected RailwayLines getPreviousStation(RailwayLines railwayLines, int numberAlarmadvanceStations, int current) {
+		if(StringUtils.isTrimEmpty(railwayLines.getPreviousStationId())) {
+			return railwayLines;
+		}
+
+		RailwayLines previousStation = railwayLinesDAO.queryById(railwayLines.getPreviousStationId());
+
+		if(previousStation == null || StringUtils.isTrimEmpty(previousStation.getId())) {
+			return railwayLines;
+		}
+
+		if(current == numberAlarmadvanceStations) {
+			return previousStation;
+		}
+
+		return getPreviousStation(previousStation, numberAlarmadvanceStations, ++current);
+	}
+
+	protected RailwayLines getNextStation(RailwayLines railwayLines, int numberAlarmadvanceStations, int current) {
+		RailwayLines queryRailwayLines = new RailwayLines();
+		queryRailwayLines.setPreviousStationId(railwayLines.getId());
+
+		List<RailwayLines> railwayLinesList = railwayLinesDAO.queryList(queryRailwayLines);
+
+		if(railwayLinesList == null || railwayLinesList.isEmpty()) {
+			return railwayLines;
+		}
+
+		RailwayLines nextStation = railwayLinesList.get(0);
+
+		if(current == numberAlarmadvanceStations) {
+			return nextStation;
+		}
+
+		return getNextStation(nextStation, numberAlarmadvanceStations, ++current);
+
+	}
+
+	@Override
+	public void setWarningRailwayLinesListCache() {
+		warningRailwayLinesListCache.clear();
+
+		List<WorkSegment> workSegmentList = workSegmentService.getWorkSegmentListCache();
+		if(workSegmentList == null || workSegmentList.isEmpty()) {
+			return;
+		}
+
+		int numberAlarmadvanceStations = sysParameterService.getNumberAlarmadvanceStations();
+
+		workSegmentList.forEach(workSegment -> {
+			RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(workSegment.getStartLongitude());
+
+			RailwayLines previousStation = getPreviousStation(railwayLines, numberAlarmadvanceStations, 1);
+			RailwayLines nextStation = getNextStation(railwayLines, numberAlarmadvanceStations, 1);
+
+			WorkSegmentRailwayLines previousWorkSegmentRailwayLines = new WorkSegmentRailwayLines(workSegment, previousStation);
+			warningRailwayLinesListCache.put(previousStation.getId(), previousWorkSegmentRailwayLines);
+			WorkSegmentRailwayLines nextWorkSegmentRailwayLines = new WorkSegmentRailwayLines(workSegment, nextStation);
+			warningRailwayLinesListCache.put(nextStation.getId(), nextWorkSegmentRailwayLines);
+		});
+
+	}
+
+	protected WorkSegmentRailwayLines getWarningRailwayLines(CurrentRcRsp rcRsp) {
+		for(Map.Entry<String, WorkSegmentRailwayLines> entry : warningRailwayLinesListCache.entrySet()) {
+			WorkSegmentRailwayLines workSegmentRailwayLines = entry.getValue();
 
 
+			RailwayLines railwayLines = workSegmentRailwayLines.getRailwayLines();
+
+			if(rcRsp.getLongitude() > railwayLines.getEndLongitude() && rcRsp.getLongitude() < railwayLines.getStartLongitude()) {
+				return workSegmentRailwayLines;
+			}
+
+			if(rcRsp.getLongitude() > railwayLines.getStartLongitude() && rcRsp.getLongitude() < railwayLines.getEndLongitude()) {
+				return workSegmentRailwayLines;
+			}
+		}
+
+		return null;
+	}
+
+	protected void temporaryStation(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap, String direction) {
+		WorkSegmentRailwayLines workSegmentRailwayLines = getWarningRailwayLines(rcRsp);
+
+
+		if(workSegmentRailwayLines == null) {
+
+		}
 	}
 
 	private WorkSegment getApproachingWorkSegment(CurrentRcRsp rcRsp) {

@@ -11,6 +11,11 @@ import java.util.Map;
 public interface RailwayLinesService extends IBaseService<RailwayLines, String> {
 
     /**
+     * 设置警告站缓存
+     */
+    void setWarningRailwayLinesListCache();
+
+    /**
      * 线路预警分析
      * @param rcRsp
      */

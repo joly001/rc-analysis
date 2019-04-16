@@ -54,6 +54,13 @@ public class SysParameterServiceImpl extends BaseServiceImpl<SysParameter, Strin
 	}
 
 	@Override
+	public int getNumberAlarmadvanceStations() {
+		String numberAlarmadvanceStations = sysParameterMap.get(SysParameter.KEY_NUMBER_ALARM_ADVANCE_STATIONS);
+
+		return Integer.getInteger(numberAlarmadvanceStations);
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		updateSysParameterCache();
 	}

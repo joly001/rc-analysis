@@ -22,5 +22,10 @@ public interface SysParameterService extends IBaseService<SysParameter, String> 
      * 火车接近作业面人员报警距离,单位米
      */
     double getTrainApproachingDistance();
+
+    /**
+     * 临站报警提前站数
+     */
+    int getNumberAlarmadvanceStations();
 	
 }
