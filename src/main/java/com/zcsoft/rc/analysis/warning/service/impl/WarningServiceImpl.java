@@ -66,10 +66,14 @@ public class WarningServiceImpl implements WarningService, ApplicationContextAwa
 
     @Override
     public boolean isOpen() {
+        logger.info("warnig status is close");
+
         return isOpen;
     }
 
     protected void close() {
+        logger.info("warnig status is close");
+
         isOpen = false;
 
         workWarningService.finishAll();

@@ -60,6 +60,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	public void setWarningService(WarningService warningService) {
 		this.warningService = warningService;
 	}
+	@Resource
+	public void setNoticeService(NoticeService noticeService) {
+		this.noticeService = noticeService;
+	}
 
 	public Organization getDep(String organizationId) {
 		Organization organization = organizationDAO.queryById(organizationId);
