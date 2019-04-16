@@ -124,10 +124,15 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     }
 
     @Override
-    public void addTrainApproachingNotice(TrainWarning trainWarning) {
+    public void addTrainWarningNotice(TrainWarning trainWarning) {
         User user = userDAO.queryById(trainWarning.getUserId());
 
-        String type = Notice.TYPE_TRAIN_APPROACHING;
+        String type;
+        if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
+            type =  Notice.TYPE_TEMPORARY_STATION;
+        } else {
+            type = Notice.TYPE_TRAIN_APPROACHING;
+        }
 
         String content = applicationContext.getMessage("notice.type."+type, new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
 

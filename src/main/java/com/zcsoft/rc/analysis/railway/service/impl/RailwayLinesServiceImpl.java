@@ -144,9 +144,33 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	protected void temporaryStation(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap, String direction) {
 		WorkSegmentRailwayLines workSegmentRailwayLines = getWarningRailwayLines(rcRsp);
 
+		WorkSegment workSegment = workSegmentRailwayLines.getWorkSegment();
+		RailwayLines railwayLines = workSegmentRailwayLines.getRailwayLines();
+
 
 		if(workSegmentRailwayLines == null) {
+			trainWarningService.finishTemporaryStationWarning(rcRsp.getId());
+		} else {
 
+			List<CurrentRcRsp> currentRcRspList = new ArrayList<>();
+			rcMap.forEach((id, currentRcRsp) -> {
+				if(rcRsp.getId().equals(id)) {
+					return;
+				}
+
+				if(currentRcRsp.getLongitude() > workSegment.getEndLongitude() && currentRcRsp.getLongitude() < workSegment.getStartLongitude()) {
+					currentRcRspList.add(currentRcRsp);
+					return;
+				}
+
+				if(currentRcRsp.getLongitude() > workSegment.getStartLongitude() && currentRcRsp.getLongitude() < workSegment.getEndLongitude()) {
+					currentRcRspList.add(currentRcRsp);
+					return;
+				}
+
+			});
+
+			trainWarningService.addTemporaryStationWarning(rcRsp.getId(), rcRsp.getLongitude(), rcRsp.getLatitude(), direction ,railwayLines.getId(), railwayLines.getRailwayLinesName(),currentRcRspList);
 		}
 	}
 
@@ -186,7 +210,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 			double locationDistance = locationComponent.getDistance(rcRsp.getLongitude(), rcRsp.getLatitude(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
 
 			if(locationDistance<=trainApproachingDistance) {
-				trainWarningService.addTrainApproachingWarning(currentRcRsp.getId(), rcRsp.getLongitude(), rcRsp.getLatitude(), direction, workSegment.getId(), workSegment.getWorkSegmentName());
+				trainWarningService.addTrainApproachingWarning(currentRcRsp.getId(), currentRcRsp.getType(), rcRsp.getLongitude(), rcRsp.getLatitude(), direction, workSegment.getId(), workSegment.getWorkSegmentName());
 			} else {
 				trainWarningService.finishTrainApproachingWarning(currentRcRsp.getId());
 			}

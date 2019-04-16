@@ -48,6 +48,6 @@ public interface NoticeService {
      * 添加列车接近警告通知
      * @param trainWarning
      */
-    void addTrainApproachingNotice(TrainWarning trainWarning);
+    void addTrainWarningNotice(TrainWarning trainWarning);
 
 }
