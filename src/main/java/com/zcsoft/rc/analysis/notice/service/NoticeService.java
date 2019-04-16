@@ -1,6 +1,7 @@
 package com.zcsoft.rc.analysis.notice.service;
 
 import com.zcsoft.rc.notice.model.entity.Notice;
+import com.zcsoft.rc.warning.model.entity.TrainWarning;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
 
 import java.util.List;
@@ -42,5 +43,11 @@ public interface NoticeService {
      * @param workWarning
      */
     void addCordonNotice(WorkWarning workWarning);
+
+    /**
+     * 添加列车接近警告通知
+     * @param trainWarning
+     */
+    void addTrainApproachingNotice(TrainWarning trainWarning);
 
 }

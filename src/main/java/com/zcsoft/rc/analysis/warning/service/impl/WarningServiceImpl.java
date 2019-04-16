@@ -1,5 +1,6 @@
 package com.zcsoft.rc.analysis.warning.service.impl;
 
+import com.zcsoft.rc.analysis.mileage.service.WorkSegmentService;
 import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
@@ -22,21 +23,16 @@ public class WarningServiceImpl implements WarningService {
 
     private boolean isOpen = false;
 
-    private WorkSegmentDAO workSegmentDAO;
-    private WorkSegmentDataTimeDAO workSegmentDataTimeDAO;
     private WorkWarningService workWarningService;
+    private WorkSegmentService workSegmentService;
 
-    @Resource
-    public void setWorkSegmentDAO(WorkSegmentDAO workSegmentDAO) {
-        this.workSegmentDAO = workSegmentDAO;
-    }
-    @Resource
-    public void setWorkSegmentDataTimeDAO(WorkSegmentDataTimeDAO workSegmentDataTimeDAO) {
-        this.workSegmentDataTimeDAO = workSegmentDataTimeDAO;
-    }
     @Resource
     public void setWorkWarningService(WorkWarningService workWarningService) {
         this.workWarningService = workWarningService;
+    }
+    @Resource
+    public Logger getLogger() {
+        return logger;
     }
 
     @Override
@@ -61,19 +57,7 @@ public class WarningServiceImpl implements WarningService {
     @Override
     public void setWarningOpenStatus() {
 
-        LocalDate nowDate = LocalDate.now();
-        LocalDateTime beginLocalDateTime = LocalDateTime.of(nowDate, LocalTime.MIN);
-        LocalDateTime endLocalDateTime = LocalDateTime.of(nowDate,LocalTime.MAX);
-
-        ZoneId zone = ZoneId.systemDefault();
-        Instant beginInstant = beginLocalDateTime.atZone(zone).toInstant();
-        Instant endInstant = endLocalDateTime.atZone(zone).toInstant();
-
-        Date beginDateTime = Date.from(beginInstant);
-        Date endDateTime = Date.from(endInstant);
-
-
-        List<WorkSegment> workSegmentList = workSegmentDAO.queryListByWorkDate(beginDateTime, endDateTime);
+        List<WorkSegment> workSegmentList = workSegmentService.getWorkSegmentListCache();
 
         if(workSegmentList == null || workSegmentList.isEmpty()) {
             close();
@@ -85,7 +69,7 @@ public class WarningServiceImpl implements WarningService {
             WorkSegmentDataTime queryWorkSegmentDataTime = new WorkSegmentDataTime();
             queryWorkSegmentDataTime.setWorkSegmentId(workSegment.getId());
 
-            List<WorkSegmentDataTime> workSegmentDataTimeList = workSegmentDataTimeDAO.queryList(queryWorkSegmentDataTime);
+            List<WorkSegmentDataTime> workSegmentDataTimeList = workSegment.getWorkSegmentDataTimeList();
 
             if(workSegmentDataTimeList ==  null || workSegmentDataTimeList.isEmpty()) {
                 continue;

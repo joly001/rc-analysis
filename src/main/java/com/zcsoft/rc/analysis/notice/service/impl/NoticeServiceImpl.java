@@ -6,6 +6,7 @@ import com.zcsoft.rc.notice.dao.NoticeDAO;
 import com.zcsoft.rc.notice.model.entity.Notice;
 import com.zcsoft.rc.user.dao.UserDAO;
 import com.zcsoft.rc.user.model.entity.User;
+import com.zcsoft.rc.warning.model.entity.TrainWarning;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,17 +107,40 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     public void addCordonNotice(WorkWarning workWarning) {
         User user = userDAO.queryById(workWarning.getUserId());
 
-        String content = applicationContext.getMessage("notice.type."+Notice.TYPE_CORDON, null, Locale.CHINESE);
+        String type = Notice.TYPE_CORDON;
+
+        String content = applicationContext.getMessage("notice.type."+type, null, Locale.CHINESE);
 
         Notice notice = new Notice();
-        notice.setType(Notice.TYPE_CORDON);
+        notice.setType(type);
         notice.setOperatingSystem(user.getOperatingSystem());
         notice.setContent(content);
-        notice.setDataId(workWarning.getWorkWarningId());
+        notice.setDataId(workWarning.getId());
         notice.setMessagingToken(user.getMessagingToken());
         notice.setStatus(Notice.STATUS_UNTREATED);
         notice.setOperatingSystem(user.getOperatingSystem());
 
         noticeDAO.insert(notice);
+    }
+
+    @Override
+    public void addTrainApproachingNotice(TrainWarning trainWarning) {
+        User user = userDAO.queryById(trainWarning.getUserId());
+
+        String type = Notice.TYPE_TRAIN_APPROACHING;
+
+        String content = applicationContext.getMessage("notice.type."+type, new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
+
+        Notice notice = new Notice();
+        notice.setType(type);
+        notice.setOperatingSystem(user.getOperatingSystem());
+        notice.setContent(content);
+        notice.setDataId(trainWarning.getId());
+        notice.setMessagingToken(user.getMessagingToken());
+        notice.setStatus(Notice.STATUS_UNTREATED);
+        notice.setOperatingSystem(user.getOperatingSystem());
+
+        noticeDAO.insert(notice);
+
     }
 }

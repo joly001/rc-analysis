@@ -10,22 +10,19 @@ public interface TrainWarningService extends IBaseService<TrainWarning, String> 
     /**
      * 添加列车接近警告
      * @param id
-     * @param type
      * @param longitude
      * @param latitude
+     * @param direction
+     * @param workSegmentId
+     * @param workSegmentName
      */
-    void addTrainApproachingWarning(String id, String type,  Double longitude, Double latitude);
+    void addTrainApproachingWarning(String id, Double longitude, Double latitude, String direction, String workSegmentId, String workSegmentName);
 
     /**
      * 关闭列车接近警告
      * @param id
      */
     void finishTrainApproachingWarning(String id);
-
-    /**
-     * 关闭所有列车接近警告
-     */
-    void finishTrainApproachingAll();
 
 	
 }
