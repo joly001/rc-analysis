@@ -27,7 +27,7 @@ public class SysParameterServiceImpl extends BaseServiceImpl<SysParameter, Strin
 	}
 
 	@Override
-	public void updateSysParameter() {
+	public void updateSysParameterCache() {
 		List<SysParameter> sysParameterList = sysParameterDAO.queryAll();
 
 		if(sysParameterList == null || sysParameterList.isEmpty()) {
@@ -46,7 +46,15 @@ public class SysParameterServiceImpl extends BaseServiceImpl<SysParameter, Strin
 	}
 
 	@Override
+	public double getTrainApproachingDistance() {
+		String trainApproachingDistance = sysParameterMap.get(SysParameter.KEY_TRAIN_APPROACHING_DISTANCE);
+		double distance =  Double.valueOf(trainApproachingDistance)*1000;
+
+		return distance;
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
-		updateSysParameter();
+		updateSysParameterCache();
 	}
 }

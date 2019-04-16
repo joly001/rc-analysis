@@ -10,12 +10,17 @@ public interface SysParameterService extends IBaseService<SysParameter, String> 
     /**
      * 更新系统参数
      */
-    void updateSysParameter();
+    void updateSysParameterCache();
 
     /**
      * 安全红线
      * @return
      */
     double getCordon();
+
+    /**
+     * 火车接近作业面人员报警距离,单位米
+     */
+    double getTrainApproachingDistance();
 	
 }

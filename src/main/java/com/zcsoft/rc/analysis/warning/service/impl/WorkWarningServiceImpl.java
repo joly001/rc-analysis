@@ -1,10 +1,13 @@
 package com.zcsoft.rc.analysis.warning.service.impl;
 
 
+import com.sharingif.cube.components.json.IJsonService;
 import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
-import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
+import com.zcsoft.rc.collectors.api.warning.entity.WarningCollectReq;
+import com.zcsoft.rc.collectors.api.warning.entity.WarningDeleteReq;
+import com.zcsoft.rc.collectors.api.warning.service.WarningApiService;
 import com.zcsoft.rc.machinery.dao.MachineryDAO;
 import com.zcsoft.rc.machinery.model.entity.Machinery;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
@@ -15,16 +18,23 @@ import com.zcsoft.rc.user.model.entity.Organization;
 import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.dao.WorkWarningDAO;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService, InitializingBean {
+public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService, ApplicationContextAware, InitializingBean {
+
+	private Map<String, String> warningMap = new ConcurrentHashMap<>(200);
 
 	private WorkWarningDAO workWarningDAO;
 	private WorkSegmentDAO workSegmentDAO;
@@ -32,8 +42,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	private MachineryDAO machineryDAO;
 	private OrganizationDAO organizationDAO;
 
-	private WarningService warningService;
 	private NoticeService noticeService;
+	private WarningApiService warningApiService;
+	private IJsonService jsonService;
+	private ApplicationContext applicationContext;
 
 	@Resource
 	public void setWorkWarningDAO(WorkWarningDAO workWarningDAO) {
@@ -57,12 +69,20 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		this.organizationDAO = organizationDAO;
 	}
 	@Resource
-	public void setWarningService(WarningService warningService) {
-		this.warningService = warningService;
-	}
-	@Resource
 	public void setNoticeService(NoticeService noticeService) {
 		this.noticeService = noticeService;
+	}
+	@Resource
+	public void setWarningApiService(WarningApiService warningApiService) {
+		this.warningApiService = warningApiService;
+	}
+	@Resource
+	public void setJsonService(IJsonService jsonService) {
+		this.jsonService = jsonService;
+	}
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 
 	public Organization getDep(String organizationId) {
@@ -77,7 +97,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	@Override
 	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
 
-		if(warningService.getWarning(id) != null) {
+		if(getWarning(id) != null) {
 			return;
 		}
 
@@ -147,18 +167,18 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 		noticeService.addCordonNotice(workWarning);
 
-		warningService.addWarning(id, workWarning);
+		addWarning(id, workWarning);
 	}
 
 	@Override
 	public void finishCordonWarning(String id) {
-		if(warningService.getWarning(id) == null) {
+		if(getWarning(id) == null) {
 			return;
 		}
 
 		workWarningDAO.updateStatusByWorkWarningIdStatus(id, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
 
-		warningService.removeWarning(id);
+		removeWarning(id);
 	}
 
 	@Override
@@ -185,6 +205,55 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		});
 	}
 
+	protected void addWarning(String id, WorkWarning workWarning) {
+		warningMap.put(id,id);
+
+		try {
+
+			String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
+			String waringContent = applicationContext.getMessage("waring.content", new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
+
+			Map<String, Object> waring = new HashMap<>();
+			waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());
+			waring.put("workSegmentStartLatitude", workWarning.getWorkSegmentStartLatitude());
+			waring.put("workSegmentEndLongitude", workWarning.getWorkSegmentEndLongitude());
+			waring.put("workSegmentEndLatitude", workWarning.getWorkSegmentEndLatitude());
+
+			waring.put("userId", workWarning.getUserId());
+			waring.put("nick", workWarning.getNick());
+			waring.put("mobile", workWarning.getMobile());
+			waring.put("waringContent", waringContent);
+
+			String waringJson = jsonService.objectoJson(waring);
+
+			WarningCollectReq req = new WarningCollectReq();
+			req.setId(id);
+			req.setWarning(waringJson);
+
+
+			warningApiService.collect(req);
+		}catch (Exception e) {
+			logger.error("collect waring error", e);
+		}
+	}
+
+	protected void removeWarning(String id) {
+		warningMap.remove(id);
+
+		try {
+			WarningDeleteReq req = new WarningDeleteReq();
+			req.setId(id);
+
+			warningApiService.delete(req);
+		} catch (Exception e) {
+			logger.error("remove warning error", e);
+		}
+	}
+
+	protected String getWarning(String id) {
+		return warningMap.get(id);
+	}
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		List<WorkWarning> workWarningList = getCreateStatus();
@@ -194,7 +263,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		workWarningList.forEach(workWarning -> {
-			warningService.addWarning(workWarning.getWorkWarningId(), workWarning);
+			addWarning(workWarning.getWorkWarningId(), workWarning);
 		});
 	}
 }

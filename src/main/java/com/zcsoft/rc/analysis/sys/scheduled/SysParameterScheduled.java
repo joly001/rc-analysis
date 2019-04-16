@@ -20,7 +20,7 @@ public class SysParameterScheduled {
 
     @Scheduled(fixedRate = 1000*60*1)
     public synchronized void updateSysParameter() {
-        sysParameterService.updateSysParameter();
+        sysParameterService.updateSysParameterCache();
     }
 
 }
