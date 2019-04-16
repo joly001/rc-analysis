@@ -14,8 +14,6 @@ import javax.annotation.Resource;
 @Service
 public class CordonServiceImpl implements CordonService {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-
     private CordonDAO cordonDAO;
 
     private WorkWarningService workWarningService;

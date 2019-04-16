@@ -2,6 +2,7 @@ package com.zcsoft.rc.analysis.warning.service.impl;
 
 
 import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
+import com.zcsoft.rc.analysis.notice.service.NoticeService;
 import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.machinery.dao.MachineryDAO;
@@ -32,6 +33,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	private OrganizationDAO organizationDAO;
 
 	private WarningService warningService;
+	private NoticeService noticeService;
 
 	@Resource
 	public void setWorkWarningDAO(WorkWarningDAO workWarningDAO) {
@@ -124,7 +126,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		workWarning.setWorkSegmentEndLatitude(workSegment.getEndLatitude());
 
 		workWarning.setUserId(user.getId());
-		workWarning.setBuilderUserType(user.getBuilderUserType());
+		workWarning.setBuilderUserType(type);
 		workWarning.setDepId(dep.getId());
 		workWarning.setDepName(dep.getOrgName());
 		workWarning.setOrgId(organization.getId());
@@ -138,6 +140,8 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		workWarning.setLatitude(latitude);
 
 		workWarningDAO.insert(workWarning);
+
+		noticeService.addCordonNotice(workWarning);
 
 		warningService.addWarning(id, workWarning);
 	}
