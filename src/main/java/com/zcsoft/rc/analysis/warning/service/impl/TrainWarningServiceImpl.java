@@ -254,6 +254,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 		if(temporaryStation.getCurrentRcRspMap().isEmpty()) {
 			finishWarning(id, TrainWarning.TYPE_TRAIN_APPROACHING);
+			trainApproachingMap.remove(id);
 		}
 	}
 }
