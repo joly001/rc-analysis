@@ -1,8 +1,5 @@
 package com.zcsoft.rc.analysis.app.components;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class LocationComponent {
 
     private static double EARTH_RADIUS = 6378.137;

@@ -1,5 +1,6 @@
 package com.zcsoft.rc.analysis.app.autoconfigure.components;
 
+import com.zcsoft.rc.analysis.app.components.LocationComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -26,6 +27,11 @@ public class ComponentsAutoconfigure {
         threadPoolTaskExecutor.setThreadNamePrefix("workThreadPoolTaskExecutor-");
 
         return threadPoolTaskExecutor;
+    }
+
+    @Bean("locationComponent")
+    public LocationComponent createLocationComponent() {
+        return new LocationComponent();
     }
 
 }

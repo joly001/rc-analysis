@@ -9,6 +9,7 @@ import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
 import com.zcsoft.rc.mileage.dao.WorkSegmentDataTimeDAO;
 import com.zcsoft.rc.mileage.model.entity.WorkSegment;
 import com.zcsoft.rc.mileage.model.entity.WorkSegmentDataTime;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class WorkSegmentServiceImpl extends BaseServiceImpl<WorkSegment, String> implements WorkSegmentService {
+public class WorkSegmentServiceImpl extends BaseServiceImpl<WorkSegment, String> implements WorkSegmentService, InitializingBean {
 
 	private List<WorkSegment> workSegmentListCache;
 
@@ -97,5 +98,10 @@ public class WorkSegmentServiceImpl extends BaseServiceImpl<WorkSegment, String>
 		}
 
 		return null;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		setWorkingWorkSegmentListCache();
 	}
 }

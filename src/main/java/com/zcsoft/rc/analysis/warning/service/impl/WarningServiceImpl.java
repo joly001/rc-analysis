@@ -31,10 +31,6 @@ public class WarningServiceImpl implements WarningService {
     public void setWorkSegmentService(WorkSegmentService workSegmentService) {
         this.workSegmentService = workSegmentService;
     }
-    @Resource
-    public void setOpen(boolean open) {
-        isOpen = open;
-    }
 
     @Override
     public boolean isOpen() {

@@ -18,12 +18,12 @@ public class RailwayLinesScheduled {
         this.railwayLinesService = railwayLinesService;
     }
 
-    @Scheduled(fixedRate = 1000*1)
+    @Scheduled(fixedRate = 1000*60*5)
     public synchronized void setWarningRailwayLinesListCache() {
         railwayLinesService.setWarningRailwayLinesListCache();
     }
 
-    @Scheduled(fixedRate = 1000*5)
+    @Scheduled(fixedRate = 1000*60*5)
     public synchronized void decideDirection() {
         railwayLinesService.decideDirection();
     }
