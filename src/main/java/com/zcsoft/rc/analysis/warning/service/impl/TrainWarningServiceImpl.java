@@ -81,9 +81,9 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 			String waringContent;
 			if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
-				waringContent = applicationContext.getMessage("waring.content.train."+trainWarning.getType(), new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
-			} else {
 				waringContent = applicationContext.getMessage("waring.content.train."+trainWarning.getType(), new String[]{trainWarning.getRailwayLinesName()}, Locale.CHINESE);
+			} else {
+				waringContent = applicationContext.getMessage("waring.content.train."+trainWarning.getType(), new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
 			}
 
 			Map<String, Object> waring = new HashMap<>();
