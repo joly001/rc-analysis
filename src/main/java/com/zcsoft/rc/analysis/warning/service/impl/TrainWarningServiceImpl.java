@@ -19,6 +19,7 @@ import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.dao.TrainWarningDAO;
 import com.zcsoft.rc.warning.model.entity.TrainWarning;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, String> implements TrainWarningService, ApplicationContextAware  {
+public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, String> implements TrainWarningService, ApplicationContextAware {
 
 	private Map<String, TemporaryStation> temporaryStationMap = new ConcurrentHashMap<>(200);
 	private Map<String, TemporaryStation> trainApproachingMap = new ConcurrentHashMap<>(200);
@@ -80,9 +81,9 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 			String waringContent;
 			if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
-				waringContent = applicationContext.getMessage("waring.content"+trainWarning.getType(), new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
+				waringContent = applicationContext.getMessage("waring.content.train."+trainWarning.getType(), new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
 			} else {
-				waringContent = applicationContext.getMessage("waring.content"+trainWarning.getType(), new String[]{trainWarning.getRailwayLinesName()}, Locale.CHINESE);
+				waringContent = applicationContext.getMessage("waring.content.train."+trainWarning.getType(), new String[]{trainWarning.getRailwayLinesName()}, Locale.CHINESE);
 			}
 
 			Map<String, Object> waring = new HashMap<>();
@@ -108,15 +109,8 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 		}
 	}
 
-	protected TrainWarning addTrainWarning(String id, Double longitude, Double latitude, String trainWarningType, String direction,RailwayLines railwayLines, WorkSegment workSegment) {
-
-		Machinery machinery = machineryDAO.queryById(id);
-		if(machinery == null) {
-			logger.error("machinery is null, machineryId:{}", id);
-			return null;
-		}
-
-		User user = userDAO.queryById(machinery.getUserId());
+	protected TrainWarning addTrainWarning(String id, Double longitude, Double latitude, String direction, String trainWarningType, RailwayLines railwayLines, WorkSegment workSegment) {
+		User user = userDAO.queryById(id);
 		if(user == null) {
 			logger.error("user is null, userId:{}", id);
 			return null;
@@ -135,10 +129,14 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 		trainWarning.setType(trainWarningType);
 		trainWarning.setLongitude(longitude);
 		trainWarning.setLatitude(latitude);
-		trainWarning.setRailwayLinesId(railwayLines.getId());
-		trainWarning.setRailwayLinesName(railwayLines.getRailwayLinesName());
-		trainWarning.setWorkSegmentId(workSegment.getId());
-		trainWarning.setWorkSegmentName(workSegment.getWorkSegmentName());
+		if(railwayLines != null) {
+			trainWarning.setRailwayLinesId(railwayLines.getId());
+			trainWarning.setRailwayLinesName(railwayLines.getRailwayLinesName());
+		}
+		if(workSegment != null) {
+			trainWarning.setWorkSegmentId(workSegment.getId());
+			trainWarning.setWorkSegmentName(workSegment.getWorkSegmentName());
+		}
 
 		trainWarningDAO.insert(trainWarning);
 
@@ -187,7 +185,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
 
-			temporaryStation.put(id);
+			temporaryStation.put(currentRcRsp.getId());
 		}
 
 	}
@@ -231,7 +229,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
 
-			temporaryStation.put(id);
+			temporaryStation.put(currentRcRsp.getId());
 		}
 
 	}

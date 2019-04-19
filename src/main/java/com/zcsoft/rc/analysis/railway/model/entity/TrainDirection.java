@@ -63,6 +63,7 @@ public class TrainDirection {
             Coordinates previousCoordinates = coordinatesHeap[i+1];
 
             if(previousCoordinates == null) {
+                decideDirection();
                 return;
             }
 

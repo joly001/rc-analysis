@@ -140,7 +140,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 
 			if(coordinatesService.isIn(
 					currentRcRsp.getLongitude()
-					,currentRcRsp.getLongitude()
+					,currentRcRsp.getLatitude()
 					,startCoordinates
 					,endCoordinates
 			)) {
@@ -168,7 +168,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		rcMap.forEach((id, currentRcRsp) -> {
 			if(coordinatesService.isIn(
 					currentRcRsp.getLongitude()
-					,currentRcRsp.getLongitude()
+					,currentRcRsp.getLatitude()
 					,startCoordinates
 					,endCoordinates
 			)) {
@@ -182,10 +182,9 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	protected void trainApproaching(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap, String direction) {
 
 		WorkSegment workSegment = null;
+		double trainApproachingDistance = sysParameterService.getTrainApproachingDistance();
 		for(Map.Entry<String, CurrentRcRsp> entry : rcMap.entrySet()) {
 			CurrentRcRsp currentRcRsp = entry.getValue();
-
-			double trainApproachingDistance = sysParameterService.getTrainApproachingDistance();
 
 			double locationDistance = locationComponent.getDistance(rcRsp.getLongitude(), rcRsp.getLatitude(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
 
@@ -205,6 +204,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	protected TrainDirection initDirection(String id, Coordinates coordinates) {
 		RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(coordinates.getLongitude());
 
+		if(railwayLines == null) {
+			return null;
+		}
+
 		Coordinates startCoordinates = new Coordinates(railwayLines.getStartLongitude(), railwayLines.getStartLatitude());
 
 
@@ -222,7 +225,13 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		TrainDirection trainDirection = trainDirectionMap.get(id);
 
 		if(trainDirection == null) {
-			trainDirectionMap.put(id, initDirection(id, new Coordinates(longitude, latitude)));
+			trainDirection = initDirection(id, new Coordinates(longitude, latitude));
+
+			if(trainDirection == null) {
+				return null;
+			}
+
+			trainDirectionMap.put(id, trainDirection);
 
 			return trainDirection;
 		}
@@ -236,7 +245,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	public void analysis(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap) {
 		TrainDirection trainDirection = putTrainDirectionMap(rcRsp.getId(), rcRsp.getLongitude(), rcRsp.getLatitude());
 
-		if(trainDirection.getDirection() == null) {
+		if(trainDirection == null || trainDirection.getDirection() == null) {
 			return;
 		}
 

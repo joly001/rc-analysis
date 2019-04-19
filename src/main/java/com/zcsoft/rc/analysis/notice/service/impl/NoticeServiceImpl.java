@@ -1,5 +1,6 @@
 package com.zcsoft.rc.analysis.notice.service.impl;
 
+import com.sharingif.cube.core.util.StringUtils;
 import com.tencent.xinge.XingeApp;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
 import com.zcsoft.rc.notice.dao.NoticeDAO;
@@ -107,6 +108,11 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     public void addCordonNotice(WorkWarning workWarning) {
         User user = userDAO.queryById(workWarning.getUserId());
 
+        if(StringUtils.isTrimEmpty(user.getMessagingToken()) || StringUtils.isTrimEmpty(user.getOperatingSystem())) {
+            logger.error("user messagingToken or operatingSystem is null, user:{}", user);
+            return;
+        }
+
         String type = Notice.TYPE_CORDON;
 
         String content = applicationContext.getMessage("notice.type."+type, null, Locale.CHINESE);
@@ -126,6 +132,11 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     @Override
     public void addTrainWarningNotice(TrainWarning trainWarning) {
         User user = userDAO.queryById(trainWarning.getUserId());
+
+        if(StringUtils.isTrimEmpty(user.getMessagingToken()) || StringUtils.isTrimEmpty(user.getOperatingSystem())) {
+            logger.error("user messagingToken or operatingSystem is null, user:{}", user);
+            return;
+        }
 
         String type;
         if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
