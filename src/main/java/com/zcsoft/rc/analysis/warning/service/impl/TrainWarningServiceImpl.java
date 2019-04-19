@@ -246,7 +246,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 		WarningDeleteReq req = new WarningDeleteReq();
 		req.setId(currentRcRspId);
-		warningApiService.deleteTemporaryStation(req);
+		warningApiService.deleteTrainApproaching(req);
 
 		temporaryStation.remove(currentRcRspId);
 

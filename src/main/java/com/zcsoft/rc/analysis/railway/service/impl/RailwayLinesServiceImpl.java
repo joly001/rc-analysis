@@ -166,6 +166,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		RailwayLines railwayLines = workSegmentRailwayLines.getRailwayLines();
 
 		rcMap.forEach((id, currentRcRsp) -> {
+			if(id.equals(currentRcRsp.getId())) {
+				return;
+			}
+
 			if(coordinatesService.isIn(
 					currentRcRsp.getLongitude()
 					,currentRcRsp.getLatitude()
@@ -184,6 +188,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		WorkSegment workSegment = null;
 		double trainApproachingDistance = sysParameterService.getTrainApproachingDistance();
 		for(Map.Entry<String, CurrentRcRsp> entry : rcMap.entrySet()) {
+			if(rcRsp.getId().equals(entry.getKey())) {
+				continue;
+			}
+
 			CurrentRcRsp currentRcRsp = entry.getValue();
 
 			double locationDistance = locationComponent.getDistance(rcRsp.getLongitude(), rcRsp.getLatitude(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
