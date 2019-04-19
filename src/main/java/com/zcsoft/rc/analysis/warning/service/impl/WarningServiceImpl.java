@@ -3,8 +3,6 @@ package com.zcsoft.rc.analysis.warning.service.impl;
 import com.zcsoft.rc.analysis.mileage.service.WorkSegmentService;
 import com.zcsoft.rc.analysis.warning.service.WarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
-import com.zcsoft.rc.mileage.dao.WorkSegmentDAO;
-import com.zcsoft.rc.mileage.dao.WorkSegmentDataTimeDAO;
 import com.zcsoft.rc.mileage.model.entity.WorkSegment;
 import com.zcsoft.rc.mileage.model.entity.WorkSegmentDataTime;
 import org.slf4j.Logger;
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.*;
 import java.util.Date;
 import java.util.List;
 
@@ -31,8 +28,12 @@ public class WarningServiceImpl implements WarningService {
         this.workWarningService = workWarningService;
     }
     @Resource
-    public Logger getLogger() {
-        return logger;
+    public void setWorkSegmentService(WorkSegmentService workSegmentService) {
+        this.workSegmentService = workSegmentService;
+    }
+    @Resource
+    public void setOpen(boolean open) {
+        isOpen = open;
     }
 
     @Override

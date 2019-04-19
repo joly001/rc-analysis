@@ -23,4 +23,9 @@ public class RailwayLinesScheduled {
         railwayLinesService.setWarningRailwayLinesListCache();
     }
 
+    @Scheduled(fixedRate = 1000*5)
+    public synchronized void decideDirection() {
+        railwayLinesService.decideDirection();
+    }
+
 }

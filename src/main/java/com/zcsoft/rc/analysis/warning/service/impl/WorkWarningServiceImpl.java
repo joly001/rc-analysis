@@ -231,23 +231,19 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 			req.setWarning(waringJson);
 
 
-			warningApiService.collect(req);
+			warningApiService.collectCordon(req);
 		}catch (Exception e) {
 			logger.error("collect waring error", e);
 		}
 	}
 
 	protected void removeWarning(String id) {
+		WarningDeleteReq req = new WarningDeleteReq();
+		req.setId(id);
+
+		warningApiService.deleteCordon(req);
+
 		warningMap.remove(id);
-
-		try {
-			WarningDeleteReq req = new WarningDeleteReq();
-			req.setId(id);
-
-			warningApiService.delete(req);
-		} catch (Exception e) {
-			logger.error("remove warning error", e);
-		}
 	}
 
 	protected String getWarning(String id) {

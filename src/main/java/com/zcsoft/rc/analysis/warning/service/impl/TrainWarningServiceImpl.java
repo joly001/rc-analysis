@@ -4,12 +4,16 @@ package com.zcsoft.rc.analysis.warning.service.impl;
 import com.sharingif.cube.components.json.IJsonService;
 import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
+import com.zcsoft.rc.analysis.warning.model.entity.TemporaryStation;
 import com.zcsoft.rc.analysis.warning.service.TrainWarningService;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcRsp;
 import com.zcsoft.rc.collectors.api.warning.entity.WarningCollectReq;
+import com.zcsoft.rc.collectors.api.warning.entity.WarningDeleteReq;
 import com.zcsoft.rc.collectors.api.warning.service.WarningApiService;
 import com.zcsoft.rc.machinery.dao.MachineryDAO;
 import com.zcsoft.rc.machinery.model.entity.Machinery;
+import com.zcsoft.rc.mileage.model.entity.WorkSegment;
+import com.zcsoft.rc.railway.model.entity.RailwayLines;
 import com.zcsoft.rc.user.dao.UserDAO;
 import com.zcsoft.rc.user.model.entity.User;
 import com.zcsoft.rc.warning.dao.TrainWarningDAO;
@@ -29,8 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, String> implements TrainWarningService, ApplicationContextAware  {
 
-	private Map<String, Map<String,String>> temporaryStationMap = new ConcurrentHashMap<>(200);
-	private Map<String, String> trainApproachingMap = new ConcurrentHashMap<>(200);
+	private Map<String, TemporaryStation> temporaryStationMap = new ConcurrentHashMap<>(200);
+	private Map<String, TemporaryStation> trainApproachingMap = new ConcurrentHashMap<>(200);
 
 	private TrainWarningDAO trainWarningDAO;
 	private UserDAO userDAO;
@@ -72,8 +76,6 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 	}
 
 	protected void addWarning(String id, TrainWarning trainWarning) {
-		trainApproachingMap.put(id,id);
-
 		try {
 
 			String waringContent;
@@ -96,30 +98,28 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 			req.setId(id);
 			req.setWarning(waringJson);
 
-
-			warningApiService.collect(req);
+			if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
+				warningApiService.collectTemporaryStation(req);
+			} {
+				warningApiService.collectTrainApproaching(req);
+			}
 		}catch (Exception e) {
 			logger.error("collect waring error", e);
 		}
 	}
 
-	protected void addTrainWarning(String id, String type, Double longitude, Double latitude, String trainWarningType, String direction, String railwayLinesId, String railwayLinesName, String workSegmentId, String workSegmentName) {
-		User user;
-		if(User.BUILDER_USER_TYPE_LOCOMOTIVE.equals(type)) {
-			Machinery machinery = machineryDAO.queryById(id);
-			user = userDAO.queryById(machinery.getUserId());
+	protected TrainWarning addTrainWarning(String id, Double longitude, Double latitude, String trainWarningType, String direction,RailwayLines railwayLines, WorkSegment workSegment) {
 
-			if(machinery == null) {
-				logger.error("machinery is null, machineryId:{}", id);
-				return;
-			}
-		} else {
-			user = userDAO.queryById(id);
+		Machinery machinery = machineryDAO.queryById(id);
+		if(machinery == null) {
+			logger.error("machinery is null, machineryId:{}", id);
+			return null;
 		}
 
+		User user = userDAO.queryById(machinery.getUserId());
 		if(user == null) {
 			logger.error("user is null, userId:{}", id);
-			return;
+			return null;
 		}
 
 		TrainWarning trainWarning = new TrainWarning();
@@ -135,21 +135,20 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 		trainWarning.setType(trainWarningType);
 		trainWarning.setLongitude(longitude);
 		trainWarning.setLatitude(latitude);
-		trainWarning.setRailwayLinesId(railwayLinesId);
-		trainWarning.setRailwayLinesName(railwayLinesName);
-		trainWarning.setWorkSegmentId(workSegmentId);
-		trainWarning.setWorkSegmentName(workSegmentName);
+		trainWarning.setRailwayLinesId(railwayLines.getId());
+		trainWarning.setRailwayLinesName(railwayLines.getRailwayLinesName());
+		trainWarning.setWorkSegmentId(workSegment.getId());
+		trainWarning.setWorkSegmentName(workSegment.getWorkSegmentName());
 
 		trainWarningDAO.insert(trainWarning);
 
-		noticeService.addTrainWarningNotice(trainWarning);
-
-		addWarning(id, trainWarning);
+		return trainWarning;
 	}
 
-	protected void finishWarning(String id) {
+	protected void finishWarning(String id, String type) {
 		TrainWarning queryTrainWarning = new TrainWarning();
 		queryTrainWarning.setWorkWarningId(id);
+		queryTrainWarning.setType(type);
 		queryTrainWarning.setStatus(TrainWarning.STATUS_CREATE);
 
 		List<TrainWarning> trainWarningList = trainWarningDAO.queryList(queryTrainWarning);
@@ -168,50 +167,93 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 	}
 
 	@Override
-	public void addTemporaryStationWarning(String id, Double longitude, Double latitude, String direction, String railwayLinesId, String railwayLinesName, List<CurrentRcRsp> currentRcRspList) {
-		Map<String, String> currentRcRspMap = temporaryStationMap.get(id);
+	public void addTemporaryStationWarning(String id, Double longitude, Double latitude, String direction, RailwayLines railwayLines, CurrentRcRsp currentRcRsp) {
+		TemporaryStation temporaryStation = temporaryStationMap.get(id);
 
-		currentRcRspList.forEach(currentRcRsp -> {
+		if(temporaryStation == null) {
+			TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TEMPORARY_STATION,railwayLines, null);
 
-			if(currentRcRspMap !=null) {
-				if(currentRcRspMap.get(currentRcRsp.getId()) != null) {
-					return;
-				}
+			if(trainWarning == null) {
+				return;
 			}
 
-			addTrainWarning(currentRcRsp.getId(),currentRcRsp.getType(),longitude,latitude,direction, TrainWarning.TYPE_TEMPORARY_STATION,railwayLinesId,railwayLinesName,null,null);
-		});
+			temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
+
+			temporaryStationMap.put(id, temporaryStation);
+		}
+
+		if(temporaryStation.get(currentRcRsp.getId()) == null) {
+			noticeService.addTrainWarningNotice(temporaryStation.getTrainWarning());
+
+			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
+
+			temporaryStation.put(id);
+		}
 
 	}
 
 	@Override
 	public void finishTemporaryStationWarning(String id) {
-		if(temporaryStationMap.get(id) == null) {
+		TemporaryStation temporaryStation = temporaryStationMap.get(id);
+		if(temporaryStation == null) {
 			return;
 		}
 
-		finishWarning(id);
+		finishWarning(id, TrainWarning.TYPE_TEMPORARY_STATION);
+
+		temporaryStation.getCurrentRcRspMap().forEach((key, value) -> {
+			WarningDeleteReq req = new WarningDeleteReq();
+			req.setId(key);
+			warningApiService.deleteTemporaryStation(req);
+		});
 
 		temporaryStationMap.remove(id);
 	}
 
 	@Override
-	public void addTrainApproachingWarning(String id, String type, Double longitude, Double latitude, String direction, String workSegmentId, String workSegmentName) {
-		if(trainApproachingMap.get(id) != null) {
-			return;
+	public void addTrainApproachingWarning(String id, Double longitude, Double latitude, String direction, WorkSegment workSegment, CurrentRcRsp currentRcRsp) {
+		TemporaryStation temporaryStation = trainApproachingMap.get(id);
+
+		if(temporaryStation == null) {
+			TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TRAIN_APPROACHING,null, workSegment);
+
+			if(trainWarning == null) {
+				return;
+			}
+
+			temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
+
+			trainApproachingMap.put(id, temporaryStation);
 		}
 
-		addTrainWarning(id,type,longitude,latitude,direction, TrainWarning.TYPE_TRAIN_APPROACHING,null,null,workSegmentId,workSegmentName);
+		if(temporaryStation.get(currentRcRsp.getId()) == null) {
+			noticeService.addTrainWarningNotice(temporaryStation.getTrainWarning());
+
+			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
+
+			temporaryStation.put(id);
+		}
+
 	}
 
 	@Override
-	public void finishTrainApproachingWarning(String id) {
+	public void finishTrainApproachingWarning(String id, String currentRcRspId) {
+		TemporaryStation temporaryStation = trainApproachingMap.get(id);
+		if(temporaryStation == null) {
+			return;
+		}
 		if(trainApproachingMap.get(id) == null) {
 			return;
 		}
 
-		finishWarning(id);
+		WarningDeleteReq req = new WarningDeleteReq();
+		req.setId(currentRcRspId);
+		warningApiService.deleteTemporaryStation(req);
 
-		trainApproachingMap.remove(id);
+		temporaryStation.remove(currentRcRspId);
+
+		if(temporaryStation.getCurrentRcRspMap().isEmpty()) {
+			finishWarning(id, TrainWarning.TYPE_TRAIN_APPROACHING);
+		}
 	}
 }

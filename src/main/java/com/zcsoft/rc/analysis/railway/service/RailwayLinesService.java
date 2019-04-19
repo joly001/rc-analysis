@@ -20,5 +20,10 @@ public interface RailwayLinesService extends IBaseService<RailwayLines, String> 
      * @param rcRsp
      */
     void analysis(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap);
+
+    /**
+     * 判断列车方向
+     */
+    void decideDirection();
 	
 }

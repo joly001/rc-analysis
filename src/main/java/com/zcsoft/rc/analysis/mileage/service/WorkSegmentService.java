@@ -20,4 +20,12 @@ public interface WorkSegmentService extends IBaseService<WorkSegment, String> {
      */
     List<WorkSegment> getWorkSegmentListCache();
 
+    /**
+     * 获取包含坐标的作业面
+     * @param longitude
+     * @param latitude
+     * @return
+     */
+    WorkSegment getInWorkSegment(Double longitude, Double latitude);
+
 }
