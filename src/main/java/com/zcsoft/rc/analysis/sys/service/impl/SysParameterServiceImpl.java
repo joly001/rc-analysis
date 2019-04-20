@@ -61,6 +61,18 @@ public class SysParameterServiceImpl extends BaseServiceImpl<SysParameter, Strin
 	}
 
 	@Override
+	public int getRollingLimitDistance() {
+		String rollingLimitDistance = sysParameterMap.get(SysParameter.KEY_ROLLING_LIMIT_DISTANCE);
+
+		return Integer.valueOf(rollingLimitDistance);
+	}
+
+	@Override
+	public String getTypeRollingAlarmMachinery() {
+		return sysParameterMap.get(SysParameter.KEY_TYPE_ROLLING_ALARM_MACHINERY);
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		updateSysParameterCache();
 	}

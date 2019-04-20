@@ -27,5 +27,17 @@ public interface SysParameterService extends IBaseService<SysParameter, String> 
      * 临站报警提前站数
      */
     int getNumberAlarmadvanceStations();
+
+    /**
+     * 碾压限定距离
+     * @return
+     */
+    int getRollingLimitDistance();
+
+    /**
+     * 碾压报警机械类型
+     * @return
+     */
+    String getTypeRollingAlarmMachinery();
 	
 }

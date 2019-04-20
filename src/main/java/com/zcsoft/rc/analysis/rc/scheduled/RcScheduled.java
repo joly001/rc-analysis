@@ -1,6 +1,7 @@
 package com.zcsoft.rc.analysis.rc.scheduled;
 
 import com.sharingif.cube.core.util.StringUtils;
+import com.zcsoft.rc.analysis.cable.service.CableService;
 import com.zcsoft.rc.analysis.cordon.service.CordonService;
 import com.zcsoft.rc.analysis.railway.service.RailwayLinesService;
 import com.zcsoft.rc.analysis.warning.service.WarningService;
@@ -23,6 +24,7 @@ public class RcScheduled {
     private ThreadPoolTaskExecutor workThreadPoolTaskExecutor;
     private CurrentRcApiService currentRcApiService;
     private CordonService cordonService;
+    private CableService cableService;
     private WarningService warningService;
     private RailwayLinesService railwayLinesService;
 
@@ -38,6 +40,9 @@ public class RcScheduled {
     public void setCordonService(CordonService cordonService) {
         this.cordonService = cordonService;
     }
+    public void setCableService(CableService cableService) {
+        this.cableService = cableService;
+    }
     @Resource
     public void setWarningService(WarningService warningService) {
         this.warningService = warningService;
@@ -46,7 +51,6 @@ public class RcScheduled {
     public void setRailwayLinesService(RailwayLinesService railwayLinesService) {
         this.railwayLinesService = railwayLinesService;
     }
-
 
     @Scheduled(fixedRate = 1000*1)
     public synchronized void analysis() {
@@ -70,6 +74,10 @@ public class RcScheduled {
                         cordonService.analysis(currentRcRsp);
                     }
                 });
+            }
+
+            if(User.BUILDER_USER_TYPE_LOCOMOTIVE.equals(currentRcRsp.getType())) {
+                cableService.analysis(currentRcRsp);
             }
 
             workThreadPoolTaskExecutor.execute(new Runnable() {
