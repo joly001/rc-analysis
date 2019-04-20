@@ -17,9 +17,9 @@ public interface RailwayLinesService extends IBaseService<RailwayLines, String> 
 
     /**
      * 线路预警分析
-     * @param rcRsp
+     * @param currentRcRsp
      */
-    void analysis(CurrentRcRsp rcRsp, Map<String,CurrentRcRsp> rcMap);
+    void analysis(CurrentRcRsp currentRcRsp);
 
     /**
      * 判断列车方向

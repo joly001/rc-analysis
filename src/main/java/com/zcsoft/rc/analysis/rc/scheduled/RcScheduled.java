@@ -72,9 +72,12 @@ public class RcScheduled {
                 });
             }
 
-            if(User.BUILDER_USER_TYPE_TRAIN.equals(currentRcRsp.getType())) {
-                railwayLinesService.analysis(currentRcRsp, rcMap);
-            }
+            workThreadPoolTaskExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    railwayLinesService.analysis(currentRcRsp);
+                }
+            });
         });
 
     }
