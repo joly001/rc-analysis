@@ -200,7 +200,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 				if(workSegment == null) {
 					workSegment = workSegmentService.getInWorkSegment(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
 				}
-				if(workSegment != null) {
+				if(workSegment == null) {
+					logger.error("currentRcRsp not in workSegment,currentRcRsp:{}",currentRcRsp);
+					continue;
+				} else {
 					trainWarningService.addTrainApproachingWarning(rcRsp.getId(), rcRsp.getLongitude(), rcRsp.getLatitude(), direction, workSegment,currentRcRsp);
 				}
 			} else {
@@ -254,6 +257,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		TrainDirection trainDirection = putTrainDirectionMap(rcRsp.getId(), rcRsp.getLongitude(), rcRsp.getLatitude());
 
 		if(trainDirection == null || trainDirection.getDirection() == null) {
+			logger.info("train direction is null, trainDirection:{}", trainDirection);
 			return;
 		}
 

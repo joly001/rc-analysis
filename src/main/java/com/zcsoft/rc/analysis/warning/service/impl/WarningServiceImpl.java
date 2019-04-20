@@ -34,7 +34,7 @@ public class WarningServiceImpl implements WarningService {
 
     @Override
     public boolean isOpen() {
-        logger.info("warnig status is close");
+        logger.info("warnig status isOpen:{}",isOpen);
 
         return isOpen;
     }

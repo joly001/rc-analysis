@@ -216,6 +216,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 			TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TRAIN_APPROACHING,null, workSegment);
 
 			if(trainWarning == null) {
+				logger.error("add train approaching trainWarning is null,trainWarning:{}",trainWarning);
 				return;
 			}
 
@@ -230,6 +231,8 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
 
 			temporaryStation.put(currentRcRsp.getId());
+		} else {
+			logger.info("currentRcRsp in the trainApproachingMap,currentRcRsp:{}",currentRcRsp);
 		}
 
 	}
@@ -238,9 +241,11 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 	public void finishTrainApproachingWarning(String id, String currentRcRspId) {
 		TemporaryStation temporaryStation = trainApproachingMap.get(id);
 		if(temporaryStation == null) {
+			logger.info("finish train approaching warning, id is null,id:{}",id);
 			return;
 		}
 		if(trainApproachingMap.get(id) == null) {
+			logger.info("finish train approaching warning, currentRcRspId is null,currentRcRspId:{}",currentRcRspId);
 			return;
 		}
 
