@@ -166,18 +166,20 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 	@Override
 	public void addTemporaryStationWarning(String id, Double longitude, Double latitude, String direction, RailwayLines railwayLines, CurrentRcRsp currentRcRsp) {
-		TemporaryStation temporaryStation = temporaryStationMap.get(id);
+		TemporaryStation temporaryStation;
+		synchronized (temporaryStationMap) {
+			temporaryStation = temporaryStationMap.get(id);
+			if(temporaryStation == null) {
+				TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TEMPORARY_STATION,railwayLines, null);
 
-		if(temporaryStation == null) {
-			TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TEMPORARY_STATION,railwayLines, null);
+				if(trainWarning == null) {
+					return;
+				}
 
-			if(trainWarning == null) {
-				return;
+				temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
+
+				temporaryStationMap.put(id, temporaryStation);
 			}
-
-			temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
-
-			temporaryStationMap.put(id, temporaryStation);
 		}
 
 		if(temporaryStation.get(currentRcRsp.getId()) == null) {
@@ -210,19 +212,22 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 
 	@Override
 	public void addTrainApproachingWarning(String id, Double longitude, Double latitude, String direction, WorkSegment workSegment, CurrentRcRsp currentRcRsp) {
-		TemporaryStation temporaryStation = trainApproachingMap.get(id);
+		TemporaryStation temporaryStation;
+		synchronized (trainApproachingMap) {
+			temporaryStation = trainApproachingMap.get(id);
 
-		if(temporaryStation == null) {
-			TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TRAIN_APPROACHING,null, workSegment);
+			if(temporaryStation == null) {
+				TrainWarning trainWarning = addTrainWarning(id,longitude,latitude,direction, TrainWarning.TYPE_TRAIN_APPROACHING,null, workSegment);
 
-			if(trainWarning == null) {
-				logger.error("add train approaching trainWarning is null,trainWarning:{}",trainWarning);
-				return;
+				if(trainWarning == null) {
+					logger.error("add train approaching trainWarning is null,trainWarning:{}",trainWarning);
+					return;
+				}
+
+				temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
+
+				trainApproachingMap.put(id, temporaryStation);
 			}
-
-			temporaryStation = new TemporaryStation(trainWarning, new HashMap<>());
-
-			trainApproachingMap.put(id, temporaryStation);
 		}
 
 		if(temporaryStation.get(currentRcRsp.getId()) == null) {
