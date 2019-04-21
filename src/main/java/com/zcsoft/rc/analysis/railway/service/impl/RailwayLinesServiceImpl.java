@@ -141,7 +141,6 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 
 			if(coordinatesService.isIn(
 					currentRcRsp.getLongitude()
-					,currentRcRsp.getLatitude()
 					,startCoordinates
 					,endCoordinates
 			)) {
@@ -156,7 +155,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		WorkSegmentRailwayLines workSegmentRailwayLines = getWarningRailwayLines(trainCurrentRcRsp);
 
 		if(workSegmentRailwayLines == null) {
-			logger.error("work segment railway lines is null, rcRsp:{}", trainCurrentRcRsp);
+			logger.info("work segment railway lines is null, rcRsp:{}", trainCurrentRcRsp);
 			trainWarningService.finishTemporaryStationWarning(trainCurrentRcRsp.getId());
 			return;
 		}
@@ -168,7 +167,6 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 
 		if(coordinatesService.isIn(
 				currentRcRsp.getLongitude()
-				,currentRcRsp.getLatitude()
 				,startCoordinates
 				,endCoordinates
 		)) {

@@ -8,20 +8,12 @@ import org.springframework.stereotype.Service;
 public class CoordinatesServiceImpl implements CoordinatesService {
 
     @Override
-    public boolean isIn(Double longitude, Double latitude, Coordinates startCoordinates, Coordinates endCoordinates) {
+    public boolean isIn(Double longitude, Coordinates startCoordinates, Coordinates endCoordinates) {
         if(longitude > endCoordinates.getLongitude() && longitude < startCoordinates.getLongitude()) {
             return true;
         }
 
         if(longitude >startCoordinates.getLongitude() && longitude < endCoordinates.getLongitude()) {
-            return true;
-        }
-
-        if(latitude > endCoordinates.getLatitude() && latitude < startCoordinates.getLatitude()) {
-            return true;
-        }
-
-        if(latitude > startCoordinates.getLatitude() && latitude < endCoordinates.getLatitude()) {
             return true;
         }
 

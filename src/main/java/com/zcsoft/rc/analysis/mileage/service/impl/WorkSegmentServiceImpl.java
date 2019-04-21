@@ -89,7 +89,6 @@ public class WorkSegmentServiceImpl extends BaseServiceImpl<WorkSegment, String>
 		for(WorkSegment workSegment : workSegmentListCache) {
 			if(coordinatesService.isIn(
 					longitude
-					,latitude
 					,new Coordinates(workSegment.getStartLongitude(), workSegment.getStartLatitude())
 					,new Coordinates(workSegment.getEndLongitude(), workSegment.getEndLatitude())
 			)) {

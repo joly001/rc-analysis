@@ -7,11 +7,10 @@ public interface CoordinatesService {
     /**
      * 坐标是否在区间内
      * @param longitude
-     * @param latitude
      * @param startCoordinates
      * @param endCoordinates
      * @return
      */
-    boolean isIn(Double longitude, Double latitude, Coordinates startCoordinates, Coordinates endCoordinates);
+    boolean isIn(Double longitude, Coordinates startCoordinates, Coordinates endCoordinates);
 
 }
