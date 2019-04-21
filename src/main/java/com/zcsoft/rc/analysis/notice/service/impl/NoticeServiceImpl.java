@@ -105,7 +105,7 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
     }
 
     @Override
-    public void addCordonNotice(WorkWarning workWarning) {
+    public void addWorkWarningNotice(WorkWarning workWarning) {
         User user = userDAO.queryById(workWarning.getUserId());
 
         if(StringUtils.isTrimEmpty(user.getMessagingToken()) || StringUtils.isTrimEmpty(user.getOperatingSystem())) {
@@ -113,7 +113,13 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
             return;
         }
 
-        String type = Notice.TYPE_CORDON;
+        String type = null;
+        if(WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE.equals(workWarning.getType())) {
+            type = Notice.TYPE_CORDON;
+        }
+        if(WorkWarning.TYPE_ROLLING_CABLE.equals(workWarning.getType())) {
+            type = Notice.TYPE_ROLLING_CABLE;
+        }
 
         String content = applicationContext.getMessage("notice.type."+type, null, Locale.CHINESE);
 

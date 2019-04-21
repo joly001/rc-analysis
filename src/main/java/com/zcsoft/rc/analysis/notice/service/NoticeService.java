@@ -39,10 +39,10 @@ public interface NoticeService {
     void send(Notice notice);
 
     /**
-     * 添加接近警告线通知
+     * 添加警告线通知
      * @param workWarning
      */
-    void addCordonNotice(WorkWarning workWarning);
+    void addWorkWarningNotice(WorkWarning workWarning);
 
     /**
      * 添加列车接近警告通知

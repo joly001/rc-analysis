@@ -34,7 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.lang.String> implements WorkWarningService, ApplicationContextAware, InitializingBean {
 
-	private Map<String, String> warningMap = new ConcurrentHashMap<>(200);
+	private Map<String, String> cordonWarningMap = new ConcurrentHashMap<>(200);
+	private Map<String, String> cableWarningMap = new ConcurrentHashMap<>(200);
 
 	private WorkWarningDAO workWarningDAO;
 	private WorkSegmentDAO workSegmentDAO;
@@ -93,19 +94,12 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 		return getDep(organization.getParentId());
 	}
-
-	@Override
-	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
-
-		if(getWarning(id) != null) {
-			return;
-		}
-
+	protected WorkWarning addWorkWarning(String id,String type, String workType, Double longitude, Double latitude) {
 		WorkSegment workSegment = workSegmentDAO.queryByStartLongitudeEndLongitude(longitude);
 
 		if(workSegment == null) {
 			logger.error("workSegment is null, longitude:{}", longitude);
-			return;
+			return null;
 		}
 
 		User user;
@@ -115,7 +109,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 			if(machinery == null) {
 				logger.error("machinery is null, machineryId:{}", id);
-				return;
+				return null;
 			}
 		} else {
 			user = userDAO.queryById(id);
@@ -123,7 +117,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 		if(user == null) {
 			logger.error("user is null, userId:{}", id);
-			return;
+			return null;
 		}
 
 		Organization organization = organizationDAO.queryById(user.getOrganizationId());
@@ -158,27 +152,73 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		workWarning.setNick(user.getNick());
 		workWarning.setMobile(user.getMobile());
 		workWarning.setStatus(WorkWarning.STATUS_CREATE);
-		workWarning.setType(WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE);
+		workWarning.setType(workType);
 
 		workWarning.setLongitude(longitude);
 		workWarning.setLatitude(latitude);
 
 		workWarningDAO.insert(workWarning);
 
-		noticeService.addCordonNotice(workWarning);
+		return workWarning;
+	}
+
+	@Override
+	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
+
+		if(cordonWarningMap.get(id) == null) {
+			return;
+		}
+
+		WorkWarning workWarning = addWorkWarning(id, type, WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE, longitude, latitude);
+
+		noticeService.addWorkWarningNotice(workWarning);
 
 		addWarning(id, workWarning);
 	}
 
 	@Override
 	public void finishCordonWarning(String id) {
-		if(getWarning(id) == null) {
+		if(cordonWarningMap.get(id) == null) {
 			return;
 		}
 
 		workWarningDAO.updateStatusByWorkWarningIdStatus(id, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
 
-		removeWarning(id);
+		WarningDeleteReq req = new WarningDeleteReq();
+		req.setId(id);
+
+		warningApiService.deleteCordon(req);
+
+		cordonWarningMap.remove(id);
+	}
+
+	@Override
+	public void addCableWarning(String id, String type, Double longitude, Double latitude) {
+		if(cableWarningMap.get(id) == null) {
+			return;
+		}
+
+		WorkWarning workWarning = addWorkWarning(id, type, WorkWarning.TYPE_ROLLING_CABLE, longitude, latitude);
+
+		noticeService.addWorkWarningNotice(workWarning);
+
+		addWarning(id, workWarning);
+	}
+
+	@Override
+	public void finishCableWarning(String id) {
+		if(cableWarningMap.get(id) == null) {
+			return;
+		}
+
+		workWarningDAO.updateStatusByWorkWarningIdStatus(id, WorkWarning.STATUS_CREATE, WorkWarning.STATUS_FINISH);
+
+		WarningDeleteReq req = new WarningDeleteReq();
+		req.setId(id);
+
+		warningApiService.deleteCordon(req);
+
+		cableWarningMap.remove(id);
 	}
 
 	@Override
@@ -206,12 +246,10 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	}
 
 	protected void addWarning(String id, WorkWarning workWarning) {
-		warningMap.put(id,id);
-
 		try {
 
 			String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
-			String waringContent = applicationContext.getMessage("waring.content.cordon", new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
+			String waringContent = applicationContext.getMessage("waring.content."+workWarning.getType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
 
 			Map<String, Object> waring = new HashMap<>();
 			waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());
@@ -237,19 +275,6 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 	}
 
-	protected void removeWarning(String id) {
-		WarningDeleteReq req = new WarningDeleteReq();
-		req.setId(id);
-
-		warningApiService.deleteCordon(req);
-
-		warningMap.remove(id);
-	}
-
-	protected String getWarning(String id) {
-		return warningMap.get(id);
-	}
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		List<WorkWarning> workWarningList = getCreateStatus();
@@ -259,6 +284,12 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		workWarningList.forEach(workWarning -> {
+			if(WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE.equals(workWarning.getType())) {
+				cordonWarningMap.put(workWarning.getWorkWarningId(), workWarning.getWorkWarningId());
+			}
+			if(WorkWarning.TYPE_ROLLING_CABLE.equals(workWarning.getType())) {
+				cableWarningMap.put(workWarning.getWorkWarningId(), workWarning.getWorkWarningId());
+			}
 			addWarning(workWarning.getWorkWarningId(), workWarning);
 		});
 	}

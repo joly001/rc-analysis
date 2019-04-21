@@ -1,5 +1,6 @@
 package com.zcsoft.rc.analysis.cable.service.impl;
 
+import com.sharingif.cube.core.util.StringUtils;
 import com.zcsoft.rc.analysis.cable.dao.CableDAO;
 import com.zcsoft.rc.analysis.cable.service.CableService;
 import com.zcsoft.rc.analysis.machinery.service.MachineryService;
@@ -65,6 +66,11 @@ public class CableServiceImpl implements CableService {
 
         String nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
 
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+
+        } else {
+            workWarningService.addCableWarning(currentRcRsp.getId(), currentRcRsp.getType(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+        }
     }
 
 }

@@ -63,7 +63,7 @@ public class NoticeScheduled {
     }
 
     @Scheduled(fixedRate = 1000*60*3)
-    public synchronized void addCordonNotice() {
+    public synchronized void addWorkWarningNotice() {
         List<WorkWarning> workWarningList = workWarningService.getCreateStatus();
 
         if(workWarningList == null || workWarningList.isEmpty()) {
@@ -74,7 +74,7 @@ public class NoticeScheduled {
             workThreadPoolTaskExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    noticeService.addCordonNotice(workWarning);
+                    noticeService.addWorkWarningNotice(workWarning);
                 }
             });
         }
