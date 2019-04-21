@@ -124,6 +124,8 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
             logger.info("push notice result, result:{}",result);
         } catch (Exception e) {
             logger.error("push notice error", e);
+        } finally {
+            jpushClient.close();
         }
 
         updateStatusToSuccess(notice.getId());
