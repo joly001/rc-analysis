@@ -67,7 +67,7 @@ public class CableServiceImpl implements CableService {
         String nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
 
         if(StringUtils.isTrimEmpty(nearDataId)) {
-
+            workWarningService.finishCableWarning(currentRcRsp.getId());
         } else {
             workWarningService.addCableWarning(currentRcRsp.getId(), currentRcRsp.getType(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
         }
