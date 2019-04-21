@@ -165,7 +165,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	@Override
 	public void addCordonWarning(String id,String type,Double longitude, Double latitude) {
 
-		if(cordonWarningMap.get(id) == null) {
+		if(cordonWarningMap.get(id) != null) {
 			return;
 		}
 
@@ -174,6 +174,8 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		noticeService.addWorkWarningNotice(workWarning);
 
 		addWarning(id, workWarning);
+
+		cordonWarningMap.put(id, id);
 	}
 
 	@Override
@@ -194,7 +196,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 
 	@Override
 	public void addCableWarning(String id, String type, Double longitude, Double latitude) {
-		if(cableWarningMap.get(id) == null) {
+		if(cableWarningMap.get(id) != null) {
 			return;
 		}
 
@@ -203,6 +205,8 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		noticeService.addWorkWarningNotice(workWarning);
 
 		addWarning(id, workWarning);
+
+		cableWarningMap.put(id, id);
 	}
 
 	@Override
@@ -246,33 +250,30 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	}
 
 	protected void addWarning(String id, WorkWarning workWarning) {
-		try {
 
-			String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
-			String waringContent = applicationContext.getMessage("waring.content."+workWarning.getType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
+		String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
+		String waringContent = applicationContext.getMessage("waring.content."+workWarning.getType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
 
-			Map<String, Object> waring = new HashMap<>();
-			waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());
-			waring.put("workSegmentStartLatitude", workWarning.getWorkSegmentStartLatitude());
-			waring.put("workSegmentEndLongitude", workWarning.getWorkSegmentEndLongitude());
-			waring.put("workSegmentEndLatitude", workWarning.getWorkSegmentEndLatitude());
+		Map<String, Object> waring = new HashMap<>();
+		waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());
+		waring.put("workSegmentStartLatitude", workWarning.getWorkSegmentStartLatitude());
+		waring.put("workSegmentEndLongitude", workWarning.getWorkSegmentEndLongitude());
+		waring.put("workSegmentEndLatitude", workWarning.getWorkSegmentEndLatitude());
 
-			waring.put("userId", workWarning.getUserId());
-			waring.put("nick", workWarning.getNick());
-			waring.put("mobile", workWarning.getMobile());
-			waring.put("waringContent", waringContent);
+		waring.put("userId", workWarning.getUserId());
+		waring.put("nick", workWarning.getNick());
+		waring.put("mobile", workWarning.getMobile());
+		waring.put("waringContent", waringContent);
 
-			String waringJson = jsonService.objectoJson(waring);
+		String waringJson = jsonService.objectoJson(waring);
 
-			WarningCollectReq req = new WarningCollectReq();
-			req.setId(id);
-			req.setWarning(waringJson);
+		WarningCollectReq req = new WarningCollectReq();
+		req.setId(id);
+		req.setWarning(waringJson);
 
 
-			warningApiService.collectCordon(req);
-		}catch (Exception e) {
-			logger.error("collect waring error", e);
-		}
+		warningApiService.collectCordon(req);
+
 	}
 
 	@Override
