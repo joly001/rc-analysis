@@ -40,6 +40,7 @@ public class RcScheduled {
     public void setCordonService(CordonService cordonService) {
         this.cordonService = cordonService;
     }
+    @Resource
     public void setCableService(CableService cableService) {
         this.cableService = cableService;
     }

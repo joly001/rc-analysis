@@ -1,7 +1,13 @@
 package com.zcsoft.rc.analysis.notice.service.impl;
 
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.Options;
+import cn.jpush.api.push.model.Platform;
+import cn.jpush.api.push.model.PushPayload;
+import cn.jpush.api.push.model.audience.Audience;
+import cn.jpush.api.push.model.notification.Notification;
 import com.sharingif.cube.core.util.StringUtils;
-import com.tencent.xinge.XingeApp;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
 import com.zcsoft.rc.notice.dao.NoticeDAO;
 import com.zcsoft.rc.notice.model.entity.Notice;
@@ -26,21 +32,21 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private long xingeAppId;
-    private String xingeSecretKey;
+    private String pushAppId;
+    private String pushSecretKey;
 
     private NoticeDAO noticeDAO;
     private UserDAO userDAO;
 
     private ApplicationContext applicationContext;
 
-    @Value("${xinge.app.id}")
-    public void setXingeAppId(long xingeAppId) {
-        this.xingeAppId = xingeAppId;
+    @Value("${push.app.id}")
+    public void setPushAppId(String pushAppId) {
+        this.pushAppId = pushAppId;
     }
-    @Value("${xinge.secret.key}")
-    public void setXingeSecretKey(String xingeSecretKey) {
-        this.xingeSecretKey = xingeSecretKey;
+    @Value("${push.secret.key}")
+    public void setPushSecretKey(String pushSecretKey) {
+        this.pushSecretKey = pushSecretKey;
     }
     @Resource
     public void setNoticeDAO(NoticeDAO noticeDAO) {
@@ -92,13 +98,32 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
 
     @Override
     public void send(Notice notice) {
+        JPushClient jpushClient = new JPushClient(pushSecretKey, pushAppId);
 
+        PushPayload pushPayload = null;
         if(User.OPERATING_SYSTEM_ANDROID.equals(notice.getOperatingSystem())) {
-            XingeApp.pushTokenAndroid(xingeAppId, xingeSecretKey, null, notice.getContent(), notice.getMessagingToken());
+            pushPayload = PushPayload.newBuilder()
+                    .setPlatform(Platform.android())
+                    .setAudience(Audience.registrationId(notice.getMessagingToken()))
+                    .setNotification(Notification.alert(notice.getContent()))
+                    .setOptions(Options.newBuilder().setApnsProduction(true).build())
+                    .build();
         }
 
         if (User.OPERATINGSYSTEM_IOS.equals(notice.getOperatingSystem())) {
-            XingeApp.pushTokenIos(xingeAppId, xingeSecretKey, notice.getContent(), notice.getMessagingToken(), XingeApp.IOSENV_PROD);
+            pushPayload = PushPayload.newBuilder()
+                    .setPlatform(Platform.ios())
+                    .setAudience(Audience.registrationId(notice.getMessagingToken()))
+                    .setNotification(Notification.alert(notice.getContent()))
+                    .setOptions(Options.newBuilder().setApnsProduction(true).build())
+                    .build();
+        }
+
+        try {
+            PushResult result = jpushClient.sendPush(pushPayload);
+            logger.info("push notice result, result:{}",result);
+        } catch (Exception e) {
+            logger.error("push notice error", e);
         }
 
         updateStatusToSuccess(notice.getId());
