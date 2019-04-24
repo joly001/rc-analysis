@@ -73,6 +73,18 @@ public class SysParameterServiceImpl extends BaseServiceImpl<SysParameter, Strin
 	}
 
 	@Override
+	public int getCableLimitDistance() {
+		String cableLimitDistance = sysParameterMap.get(SysParameter.KEY_CABLE_LIMIT_DISTANCE);
+		return Integer.valueOf(cableLimitDistance);
+	}
+
+	@Override
+	public int getCableLimitTime() {
+		String cableLimitTime = sysParameterMap.get(SysParameter.KEY_CABLE_LIMIT_TIME);
+		return Integer.valueOf(cableLimitTime);
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		updateSysParameterCache();
 	}

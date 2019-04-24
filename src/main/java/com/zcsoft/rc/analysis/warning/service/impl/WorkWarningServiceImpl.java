@@ -200,7 +200,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 			return;
 		}
 
-		WorkWarning workWarning = addWorkWarning(id, type, WorkWarning.TYPE_ROLLING_CABLE, longitude, latitude);
+		WorkWarning workWarning = addWorkWarning(id, User.BUILDER_USER_TYPE_LOCOMOTIVE, type, longitude, latitude);
 
 		noticeService.addWorkWarningNotice(workWarning);
 
@@ -252,7 +252,7 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 	protected void addWarning(String id, WorkWarning workWarning) {
 
 		String builderUserType = applicationContext.getMessage(workWarning.getBuilderUserType(), null, Locale.CHINESE);
-		String waringContent = applicationContext.getMessage("waring.content."+workWarning.getType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
+		String waringContent = applicationContext.getMessage("waring.content.work."+workWarning.getType(), new String[]{builderUserType, workWarning.getNick()}, Locale.CHINESE);
 
 		Map<String, Object> waring = new HashMap<>();
 		waring.put("workSegmentStartLongitude", workWarning.getWorkSegmentStartLongitude());

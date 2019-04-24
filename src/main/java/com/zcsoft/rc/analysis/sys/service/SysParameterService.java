@@ -39,5 +39,17 @@ public interface SysParameterService extends IBaseService<SysParameter, String> 
      * @return
      */
     String getTypeRollingAlarmMachinery();
+
+    /**
+     * 判定线缆附近动土报警距离
+     * @return
+     */
+    int getCableLimitDistance();
+
+    /**
+     * 判定线缆附近动土报警时间
+     * @return
+     */
+    int getCableLimitTime();
 	
 }

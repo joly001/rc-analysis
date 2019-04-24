@@ -2,20 +2,28 @@ package com.zcsoft.rc.analysis.cable.service.impl;
 
 import com.sharingif.cube.core.util.StringUtils;
 import com.zcsoft.rc.analysis.cable.dao.CableDAO;
+import com.zcsoft.rc.analysis.cable.dao.CablePolygonDAO;
+import com.zcsoft.rc.analysis.cable.model.entity.CableBuild;
 import com.zcsoft.rc.analysis.cable.service.CableService;
 import com.zcsoft.rc.analysis.machinery.service.MachineryService;
 import com.zcsoft.rc.analysis.sys.service.SysParameterService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.collectors.api.rc.entity.CurrentRcRsp;
 import com.zcsoft.rc.machinery.model.entity.Machinery;
+import com.zcsoft.rc.warning.model.entity.WorkWarning;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CableServiceImpl implements CableService {
 
+    private Map<String, CableBuild> cableBuildMap = new ConcurrentHashMap<>(200);
+
     private CableDAO cableDAO;
+    private CablePolygonDAO cablePolygonDAO;
 
     private SysParameterService sysParameterService;
     private MachineryService machineryService;
@@ -24,6 +32,10 @@ public class CableServiceImpl implements CableService {
     @Resource
     public void setCableDAO(CableDAO cableDAO) {
         this.cableDAO = cableDAO;
+    }
+    @Resource
+    public void setCablePolygonDAO(CablePolygonDAO cablePolygonDAO) {
+        this.cablePolygonDAO = cablePolygonDAO;
     }
     @Resource
     public void setSysParameterService(SysParameterService sysParameterService) {
@@ -55,6 +67,7 @@ public class CableServiceImpl implements CableService {
 
         double workRadius = machinery.getWorkRadius()/100;
 
+        // 碾压限定距离
         int rollingLimitDistance = sysParameterService.getRollingLimitDistance();
 
         double maxDistance = rollingLimitDistance-workRadius;
@@ -63,13 +76,46 @@ public class CableServiceImpl implements CableService {
             maxDistance = 0;
         }
 
-
         String nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+            nearDataId = cablePolygonDAO.intersects("geometry", currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+        }
 
         if(StringUtils.isTrimEmpty(nearDataId)) {
             workWarningService.finishCableWarning(currentRcRsp.getId());
         } else {
-            workWarningService.addCableWarning(currentRcRsp.getId(), currentRcRsp.getType(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+            workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_ROLLING_CABLE, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+            return;
+        }
+
+        // 线缆附近动土报警距离
+        int cableLimitDistance = sysParameterService.getCableLimitDistance();
+        int cableLimitTime = sysParameterService.getCableLimitTime();
+        maxDistance = cableLimitDistance-workRadius;
+        if(maxDistance<0) {
+            maxDistance = 0;
+        }
+
+        CableBuild cableBuild = cableBuildMap.get(currentRcRsp.getId());
+        if(cableBuild == null) {
+            cableBuild = new CableBuild(currentRcRsp.getId(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude(), cableLimitTime);
+
+            cableBuildMap.put(currentRcRsp.getId(), cableBuild);
+            return;
+        } else {
+            cableBuild.addCoordinateDate(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+        }
+
+        if(!cableBuild.isNotMoved()) {
+            return;
+        }
+
+        nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+            workWarningService.finishCableWarning(currentRcRsp.getId());
+        } else {
+            workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_MOVING_SOIL_NEAR_CABLES, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+            return;
         }
     }
 

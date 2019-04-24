@@ -154,6 +154,9 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
         if(WorkWarning.TYPE_ROLLING_CABLE.equals(workWarning.getType())) {
             type = Notice.TYPE_ROLLING_CABLE;
         }
+        if(WorkWarning.TYPE_MOVING_SOIL_NEAR_CABLES.equals(workWarning.getType())) {
+            type = Notice.TYPE_MOVING_SOIL_NEAR_CABLES;
+        }
 
         String content = applicationContext.getMessage("notice.type."+type, null, Locale.CHINESE);
 
