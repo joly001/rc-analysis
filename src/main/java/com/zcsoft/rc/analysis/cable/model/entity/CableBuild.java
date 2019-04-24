@@ -16,8 +16,17 @@ public class CableBuild {
         this.coordinatesLinkedList.add(new CoordinateDate(longitude, latitude));
     }
 
-    public void addCoordinateDate(Double longitude, Double latitude) {
+    synchronized public void addCoordinateDate(Double longitude, Double latitude) {
         CoordinateDate coordinateDate = new CoordinateDate(longitude, latitude);
+
+        CoordinateDate firstCoordinateDate = coordinatesLinkedList.getFirst();
+
+        if(!coordinateDate.isEqual(firstCoordinateDate)) {
+            this.coordinatesLinkedList = new LinkedList<>();
+            this.coordinatesLinkedList.add(coordinateDate);
+
+            return;
+        }
 
         CoordinateDate lastCoordinateDate = coordinatesLinkedList.getLast();
 
@@ -28,29 +37,14 @@ public class CableBuild {
         coordinatesLinkedList.addFirst(coordinateDate);
     }
 
-    protected boolean isNotMoved(int currentIndex) {
-        if(currentIndex+1 >= coordinatesLinkedList.size()) {
-            return true;
-        }
-
-        CoordinateDate currentCoordinateDate = coordinatesLinkedList.get(currentIndex);
-        CoordinateDate previousCoordinateDate = coordinatesLinkedList.get(currentIndex+1);
-
-        if(currentCoordinateDate.isEqual(previousCoordinateDate)) {
-            return isNotMoved(currentIndex++);
-        } else {
-            return false;
-        }
-    }
-
     public boolean isNotMoved() {
         CoordinateDate firstCoordinateDate = coordinatesLinkedList.getFirst();
         CoordinateDate lastCoordinateDate = coordinatesLinkedList.getLast();
 
-        if((firstCoordinateDate.getDate().getTime() - lastCoordinateDate.getDate().getTime()) < (cableLimitTime*0.8)) {
-            return false;
+        if((firstCoordinateDate.getDate().getTime() - lastCoordinateDate.getDate().getTime()) > (this.cableLimitTime*0.8)) {
+            return true;
         }
 
-        return isNotMoved(0);
+        return false;
     }
 }
