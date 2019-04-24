@@ -6,6 +6,7 @@ import cn.jpush.api.push.model.Options;
 import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
+import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import com.sharingif.cube.core.util.StringUtils;
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
@@ -113,8 +114,14 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
         if (User.OPERATINGSYSTEM_IOS.equals(notice.getOperatingSystem())) {
             pushPayload = PushPayload.newBuilder()
                     .setPlatform(Platform.ios())
+                    .setNotification(
+                            Notification.newBuilder().addPlatformNotification(
+                                    IosNotification.newBuilder()
+                                            .setMutableContent(true)
+                                            .setAlert(notice.getContent())
+                            .build()).build()
+                    )
                     .setAudience(Audience.registrationId(notice.getMessagingToken()))
-                    .setNotification(Notification.alert(notice.getContent()))
                     .setOptions(Options.newBuilder().setApnsProduction(true).build())
                     .build();
         }
