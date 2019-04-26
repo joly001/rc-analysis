@@ -65,7 +65,7 @@ public class CableServiceImpl implements CableService {
             return;
         }
 
-        double workRadius = machinery.getWorkRadius()/100;
+        double workRadius = machinery.getWorkRadius()/100d;
 
         // 碾压限定距离
         int rollingLimitDistance = sysParameterService.getRollingLimitDistance();
@@ -107,6 +107,10 @@ public class CableServiceImpl implements CableService {
         }
 
         if(!cableBuild.isNotMoved()) {
+            nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
+            if(StringUtils.isTrimEmpty(nearDataId)) {
+                workWarningService.finishCableWarning(currentRcRsp.getId());
+            }
             return;
         }
 

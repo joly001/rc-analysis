@@ -29,10 +29,10 @@ public class CoordinateDate {
     }
 
     public boolean isEqual(CoordinateDate coordinateDate) {
-        if(coordinates.getLongitude() != coordinateDate.getCoordinates().getLongitude()) {
+        if((coordinates.getLongitude() - coordinateDate.getCoordinates().getLongitude()) != 0) {
             return false;
         }
-        if(coordinates.getLatitude() != coordinateDate.getCoordinates().getLatitude()) {
+        if((coordinates.getLatitude() - coordinateDate.getCoordinates().getLatitude()) != 0) {
             return false;
         }
 
