@@ -57,6 +57,7 @@ public class WarningServiceImpl implements WarningService {
         List<WorkSegment> workSegmentList = workSegmentService.getWorkSegmentListCache();
 
         if(workSegmentList == null || workSegmentList.isEmpty()) {
+            logger.info("setWarningOpenStatus workSegmentList is null");
             close();
             return;
         }
