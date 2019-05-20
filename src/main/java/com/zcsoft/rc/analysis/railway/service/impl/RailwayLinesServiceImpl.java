@@ -119,6 +119,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		workSegmentList.forEach(workSegment -> {
 			RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(workSegment.getStartLongitude());
 
+			if(railwayLines == null) {
+				return;
+			}
+
 			RailwayLines previousStation = getPreviousStation(railwayLines, numberAlarmadvanceStations, 1);
 			RailwayLines nextStation = getNextStation(railwayLines, numberAlarmadvanceStations, 1);
 
