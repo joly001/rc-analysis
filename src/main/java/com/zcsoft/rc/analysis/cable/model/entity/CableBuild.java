@@ -30,7 +30,7 @@ public class CableBuild {
 
         CoordinateDate lastCoordinateDate = coordinatesLinkedList.getLast();
 
-        if(lastCoordinateDate.greaterThan(cableLimitTime)) {
+        if(lastCoordinateDate.greaterThan(cableLimitTime*2)) {
             coordinatesLinkedList.removeLast();
         }
 
