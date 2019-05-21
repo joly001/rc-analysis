@@ -170,6 +170,9 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		WorkWarning workWarning = addWorkWarning(id, type, WorkWarning.TYPE_APPROACHING_THE_WARNING_LINE, longitude, latitude);
+		if(workWarning == null) {
+			return;
+		}
 
 		noticeService.addWorkWarningNotice(workWarning);
 
@@ -201,6 +204,9 @@ public class WorkWarningServiceImpl extends BaseServiceImpl<WorkWarning, java.la
 		}
 
 		WorkWarning workWarning = addWorkWarning(id, User.BUILDER_USER_TYPE_LOCOMOTIVE, type, longitude, latitude);
+		if(workWarning == null) {
+			return;
+		}
 
 		noticeService.addWorkWarningNotice(workWarning);
 
