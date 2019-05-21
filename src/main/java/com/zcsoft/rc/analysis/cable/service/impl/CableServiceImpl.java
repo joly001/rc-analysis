@@ -70,7 +70,7 @@ public class CableServiceImpl implements CableService {
         // 碾压限定距离
         int rollingLimitDistance = sysParameterService.getRollingLimitDistance();
 
-        double maxDistance = rollingLimitDistance-workRadius;
+        double maxDistance = rollingLimitDistance+workRadius;
 
         if(maxDistance<0) {
             maxDistance = 0;
@@ -91,7 +91,7 @@ public class CableServiceImpl implements CableService {
         // 线缆附近动土报警距离
         int cableLimitDistance = sysParameterService.getCableLimitDistance();
         int cableLimitTime = sysParameterService.getCableLimitTime();
-        maxDistance = cableLimitDistance-workRadius;
+        maxDistance = cableLimitDistance+workRadius;
         if(maxDistance<0) {
             maxDistance = 0;
         }
