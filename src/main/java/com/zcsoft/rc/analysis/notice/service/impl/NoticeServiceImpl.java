@@ -182,13 +182,14 @@ public class NoticeServiceImpl implements NoticeService, ApplicationContextAware
         }
 
         String type;
+        String content;
         if(TrainWarning.TYPE_TEMPORARY_STATION.equals(trainWarning.getType())) {
             type =  Notice.TYPE_TEMPORARY_STATION;
+            content = applicationContext.getMessage("notice.type."+type, new String[]{trainWarning.getRailwayLinesName()}, Locale.CHINESE);
         } else {
             type = Notice.TYPE_TRAIN_APPROACHING;
+            content = applicationContext.getMessage("notice.type."+type, new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
         }
-
-        String content = applicationContext.getMessage("notice.type."+type, new String[]{trainWarning.getWorkSegmentName()}, Locale.CHINESE);
 
         Notice notice = new Notice();
         notice.setType(type);
