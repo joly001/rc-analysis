@@ -24,6 +24,8 @@ public class CableBuild {
         if(!coordinateDate.isEqual(firstCoordinateDate)) {
             this.coordinatesLinkedList = new LinkedList<>();
             this.coordinatesLinkedList.add(coordinateDate);
+
+            return;
         }
 
         CoordinateDate lastCoordinateDate = coordinatesLinkedList.getLast();
