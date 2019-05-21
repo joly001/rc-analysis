@@ -50,6 +50,49 @@ public class CableServiceImpl implements CableService {
         this.workWarningService = workWarningService;
     }
 
+    /**
+     * 线缆附近动土
+     * @param workRadius
+     * @param currentRcRsp
+     * @return
+     */
+    protected boolean analysisMovingSoilNearCables(double workRadius, CurrentRcRsp currentRcRsp) {
+        // 线缆附近动土报警距离
+        int cableLimitDistance = sysParameterService.getCableLimitDistance();
+        int cableLimitTime = sysParameterService.getCableLimitTime();
+        double maxDistance = cableLimitDistance+workRadius;
+        if(maxDistance<0) {
+            maxDistance = 0;
+        }
+
+        CableBuild cableBuild = cableBuildMap.get(currentRcRsp.getId());
+        if(cableBuild == null) {
+            cableBuild = new CableBuild(currentRcRsp.getId(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude(), cableLimitTime);
+
+            cableBuildMap.put(currentRcRsp.getId(), cableBuild);
+            return false;
+        } else {
+            cableBuild.addCoordinateDate(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+        }
+
+        String nearDataId;
+        if(!cableBuild.isNotMoved()) {
+            nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
+            if(StringUtils.isTrimEmpty(nearDataId)) {
+                return false;
+            }
+            return true;
+        }
+
+        nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+            return false;
+        } else {
+            workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_MOVING_SOIL_NEAR_CABLES, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+            return true;
+        }
+    }
+
     @Override
     public void analysis(CurrentRcRsp currentRcRsp) {
 
@@ -81,43 +124,18 @@ public class CableServiceImpl implements CableService {
             nearDataId = cablePolygonDAO.intersects("geometry", currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
         }
 
-        if(!StringUtils.isTrimEmpty(nearDataId)) {
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+            boolean flag = analysisMovingSoilNearCables(workRadius, currentRcRsp);
+
+            if(!flag) {
+                workWarningService.finishCableWarning(currentRcRsp.getId());
+            }
+        } else {
             workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_ROLLING_CABLE, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
             return;
         }
 
-        // 线缆附近动土报警距离
-        int cableLimitDistance = sysParameterService.getCableLimitDistance();
-        int cableLimitTime = sysParameterService.getCableLimitTime();
-        maxDistance = cableLimitDistance+workRadius;
-        if(maxDistance<0) {
-            maxDistance = 0;
-        }
 
-        CableBuild cableBuild = cableBuildMap.get(currentRcRsp.getId());
-        if(cableBuild == null) {
-            cableBuild = new CableBuild(currentRcRsp.getId(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude(), cableLimitTime);
-
-            cableBuildMap.put(currentRcRsp.getId(), cableBuild);
-        } else {
-            cableBuild.addCoordinateDate(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
-        }
-
-        if(!cableBuild.isNotMoved()) {
-            nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
-            if(StringUtils.isTrimEmpty(nearDataId)) {
-                workWarningService.finishCableWarning(currentRcRsp.getId());
-            }
-            return;
-        }
-
-        nearDataId = cableDAO.near("geometry",currentRcRsp.getLongitude(),currentRcRsp.getLatitude(),maxDistance,0);
-        if(StringUtils.isTrimEmpty(nearDataId)) {
-            workWarningService.finishCableWarning(currentRcRsp.getId());
-        } else {
-            workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_MOVING_SOIL_NEAR_CABLES, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
-            return;
-        }
     }
 
 }
