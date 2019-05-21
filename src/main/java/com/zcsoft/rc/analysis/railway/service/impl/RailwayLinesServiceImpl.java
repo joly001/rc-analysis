@@ -174,7 +174,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 				,startCoordinates
 				,endCoordinates
 		)) {
-			trainWarningService.addTemporaryStationWarning(trainCurrentRcRsp.getId(), trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), direction, railwayLines, currentRcRsp);
+			trainWarningService.addTemporaryStationWarning(currentRcRsp.getId(), trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), direction, railwayLines, currentRcRsp);
 		}
 
 
@@ -190,10 +190,10 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 				logger.error("currentRcRsp not in workSegment,currentRcRsp:{}",currentRcRsp);
 				return;
 			} else {
-				trainWarningService.addTrainApproachingWarning(trainCurrentRcRsp.getId(), trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), direction, workSegment,currentRcRsp);
+				trainWarningService.addTrainApproachingWarning(currentRcRsp.getId(), trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), direction, workSegment,currentRcRsp);
 			}
 		} else {
-			trainWarningService.finishTrainApproachingWarning(trainCurrentRcRsp.getId(), currentRcRsp.getId());
+			trainWarningService.finishTrainApproachingWarning(currentRcRsp.getId(), currentRcRsp.getId());
 		}
 	}
 
