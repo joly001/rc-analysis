@@ -81,9 +81,7 @@ public class CableServiceImpl implements CableService {
             nearDataId = cablePolygonDAO.intersects("geometry", currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
         }
 
-        if(StringUtils.isTrimEmpty(nearDataId)) {
-            workWarningService.finishCableWarning(currentRcRsp.getId());
-        } else {
+        if(!StringUtils.isTrimEmpty(nearDataId)) {
             workWarningService.addCableWarning(currentRcRsp.getId(), WorkWarning.TYPE_ROLLING_CABLE, currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
             return;
         }
@@ -101,7 +99,6 @@ public class CableServiceImpl implements CableService {
             cableBuild = new CableBuild(currentRcRsp.getId(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude(), cableLimitTime);
 
             cableBuildMap.put(currentRcRsp.getId(), cableBuild);
-            return;
         } else {
             cableBuild.addCoordinateDate(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
         }
