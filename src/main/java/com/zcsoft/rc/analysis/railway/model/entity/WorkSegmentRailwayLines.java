@@ -6,26 +6,33 @@ import com.zcsoft.rc.railway.model.entity.RailwayLines;
 public class WorkSegmentRailwayLines {
 
     private WorkSegment workSegment;
-    private RailwayLines railwayLines;
+    private RailwayLines previousRailwayLines;
+    private RailwayLines nextRailwayLines;
 
-    public WorkSegmentRailwayLines(WorkSegment workSegment, RailwayLines railwayLines) {
+    public WorkSegmentRailwayLines(WorkSegment workSegment, RailwayLines previousRailwayLines, RailwayLines nextRailwayLines) {
         this.workSegment = workSegment;
-        this.railwayLines = railwayLines;
+        this.previousRailwayLines = previousRailwayLines;
+        this.nextRailwayLines = nextRailwayLines;
     }
 
     public WorkSegment getWorkSegment() {
         return workSegment;
     }
 
-    public RailwayLines getRailwayLines() {
-        return railwayLines;
+    public RailwayLines getPreviousRailwayLines() {
+        return previousRailwayLines;
+    }
+
+    public RailwayLines getNextRailwayLines() {
+        return nextRailwayLines;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("WorkSegmentRailwayLines{");
         sb.append("workSegment=").append(workSegment);
-        sb.append(", railwayLines=").append(railwayLines);
+        sb.append(", previousRailwayLines=").append(previousRailwayLines);
+        sb.append(", nextRailwayLines=").append(nextRailwayLines);
         sb.append('}');
         return sb.toString();
     }

@@ -6,6 +6,7 @@ import com.sharingif.cube.support.service.base.impl.BaseServiceImpl;
 import com.zcsoft.rc.analysis.app.components.LocationComponent;
 import com.zcsoft.rc.analysis.mileage.service.WorkSegmentService;
 import com.zcsoft.rc.analysis.railway.model.entity.TrainDirection;
+import com.zcsoft.rc.analysis.railway.model.entity.WorkSegmentRailwayLine;
 import com.zcsoft.rc.analysis.railway.model.entity.WorkSegmentRailwayLines;
 import com.zcsoft.rc.analysis.railway.service.RailwayLinesService;
 import com.zcsoft.rc.analysis.rc.model.entity.Coordinates;
@@ -17,6 +18,7 @@ import com.zcsoft.rc.mileage.model.entity.WorkSegment;
 import com.zcsoft.rc.railway.dao.RailwayLinesDAO;
 import com.zcsoft.rc.railway.model.entity.RailwayLines;
 import com.zcsoft.rc.user.model.entity.User;
+import com.zcsoft.rc.warning.model.entity.TrainWarning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -126,29 +128,36 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 			RailwayLines previousStation = getPreviousStation(railwayLines, numberAlarmadvanceStations, 1);
 			RailwayLines nextStation = getNextStation(railwayLines, numberAlarmadvanceStations, 1);
 
-			WorkSegmentRailwayLines previousWorkSegmentRailwayLines = new WorkSegmentRailwayLines(workSegment, previousStation);
-			warningRailwayLinesListCache.put(previousStation.getId(), previousWorkSegmentRailwayLines);
-			WorkSegmentRailwayLines nextWorkSegmentRailwayLines = new WorkSegmentRailwayLines(workSegment, nextStation);
-			warningRailwayLinesListCache.put(nextStation.getId(), nextWorkSegmentRailwayLines);
+			WorkSegmentRailwayLines workSegmentRailwayLines = new WorkSegmentRailwayLines(workSegment, previousStation, nextStation);
+			warningRailwayLinesListCache.put(previousStation.getId(), workSegmentRailwayLines);
 		});
 
 	}
 
-	protected WorkSegmentRailwayLines getWarningRailwayLines(CurrentRcRsp currentRcRsp) {
+	protected WorkSegmentRailwayLine getWarningRailwayLines(CurrentRcRsp trainCurrentRcRsp, String direction) {
 		for(Map.Entry<String, WorkSegmentRailwayLines> entry : warningRailwayLinesListCache.entrySet()) {
 			WorkSegmentRailwayLines workSegmentRailwayLines = entry.getValue();
 
-
-			RailwayLines railwayLines = workSegmentRailwayLines.getRailwayLines();
+			RailwayLines railwayLines;
+			if(TrainWarning.DIRECTION_UP.equals(direction)) {
+				railwayLines = workSegmentRailwayLines.getNextRailwayLines();
+			} else {
+				railwayLines = workSegmentRailwayLines.getPreviousRailwayLines();
+			}
 			Coordinates startCoordinates = new Coordinates(railwayLines.getStartLongitude(), railwayLines.getStartLatitude());
 			Coordinates endCoordinates = new Coordinates(railwayLines.getEndLongitude(), railwayLines.getEndLatitude());
 
 			if(coordinatesService.isIn(
-					currentRcRsp.getLongitude()
+					trainCurrentRcRsp.getLongitude()
 					,startCoordinates
 					,endCoordinates
 			)) {
-				return workSegmentRailwayLines;
+				WorkSegmentRailwayLine workSegmentRailwayLine = new WorkSegmentRailwayLine();
+				workSegmentRailwayLine.setWorkSegment(workSegmentRailwayLines.getWorkSegment());
+				workSegmentRailwayLine.setRailwayLines(railwayLines);
+
+
+				return workSegmentRailwayLine;
 			}
 		}
 
@@ -156,18 +165,18 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	}
 
 	protected void temporaryStation(CurrentRcRsp trainCurrentRcRsp, CurrentRcRsp currentRcRsp, String direction) {
-		WorkSegmentRailwayLines workSegmentRailwayLines = getWarningRailwayLines(trainCurrentRcRsp);
+		WorkSegmentRailwayLine workSegmentRailwayLine = getWarningRailwayLines(trainCurrentRcRsp, direction);
 
-		if(workSegmentRailwayLines == null) {
+		if(workSegmentRailwayLine == null) {
 			logger.info("work segment railway lines is null, rcRsp:{}", trainCurrentRcRsp);
 			trainWarningService.finishTemporaryStationWarning(trainCurrentRcRsp.getId());
 			return;
 		}
 
-		WorkSegment workSegment = workSegmentRailwayLines.getWorkSegment();
+		WorkSegment workSegment = workSegmentRailwayLine.getWorkSegment();
 		Coordinates startCoordinates = new Coordinates(workSegment.getStartLongitude(), workSegment.getStartLatitude());
 		Coordinates endCoordinates = new Coordinates(workSegment.getEndLongitude(), workSegment.getEndLatitude());
-		RailwayLines railwayLines = workSegmentRailwayLines.getRailwayLines();
+		RailwayLines railwayLines = workSegmentRailwayLine.getRailwayLines();
 
 		if(coordinatesService.isIn(
 				currentRcRsp.getLongitude()
@@ -180,12 +189,40 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 
 	}
 
+	protected WorkSegment getInWorkSegment(CurrentRcRsp trainCurrentRcRsp, CurrentRcRsp currentRcRsp, String direction) {
+		for(Map.Entry<String, WorkSegmentRailwayLines> entry : warningRailwayLinesListCache.entrySet()) {
+			WorkSegmentRailwayLines workSegmentRailwayLines = entry.getValue();
+			WorkSegment workSegment = workSegmentRailwayLines.getWorkSegment();
+
+			if(coordinatesService.isIn(
+					currentRcRsp.getLongitude()
+					,new Coordinates(workSegment.getStartLongitude(), workSegment.getStartLatitude())
+					,new Coordinates(workSegment.getEndLongitude(), workSegment.getEndLatitude())
+			)) {
+
+				// 判断列车行驶方向，如果是离开作业人员就不报警
+				RailwayLines railwayLines;
+				if(TrainWarning.DIRECTION_UP.equals(direction)) {
+					railwayLines = workSegmentRailwayLines.getNextRailwayLines();
+				} else {
+					railwayLines = workSegmentRailwayLines.getPreviousRailwayLines();
+				}
+
+				if(((railwayLines.getStartLongitude() - currentRcRsp.getLongitude())>0) == ((trainCurrentRcRsp.getLongitude() - currentRcRsp.getLongitude())>0)) {
+					return workSegment;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	protected void trainApproaching(CurrentRcRsp trainCurrentRcRsp, CurrentRcRsp currentRcRsp, String direction) {
 		double trainApproachingDistance = sysParameterService.getTrainApproachingDistance();
 		double locationDistance = locationComponent.getDistance(trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
 
 		if(locationDistance <= trainApproachingDistance) {
-			WorkSegment workSegment = workSegmentService.getInWorkSegment(currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+			WorkSegment workSegment = getInWorkSegment(trainCurrentRcRsp, currentRcRsp, direction);
 			if(workSegment == null) {
 				logger.error("currentRcRsp not in workSegment,currentRcRsp:{}",currentRcRsp);
 				return;
