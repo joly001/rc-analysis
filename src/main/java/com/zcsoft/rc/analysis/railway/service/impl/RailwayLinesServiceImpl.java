@@ -225,13 +225,14 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 			WorkSegment workSegment = getInWorkSegment(trainCurrentRcRsp, currentRcRsp, direction);
 			if(workSegment == null) {
 				logger.error("currentRcRsp not in workSegment,currentRcRsp:{}",currentRcRsp);
-				return;
 			} else {
 				trainWarningService.addTrainApproachingWarning(currentRcRsp.getId(), trainCurrentRcRsp.getLongitude(), trainCurrentRcRsp.getLatitude(), direction, workSegment,currentRcRsp);
+
+				return;
 			}
-		} else {
-			trainWarningService.finishTrainApproachingWarning(currentRcRsp.getId(), currentRcRsp.getId());
 		}
+
+		trainWarningService.finishTrainApproachingWarning(currentRcRsp.getId(), currentRcRsp.getId());
 	}
 
 	protected TrainDirection initDirection(String id, Coordinates coordinates) {
