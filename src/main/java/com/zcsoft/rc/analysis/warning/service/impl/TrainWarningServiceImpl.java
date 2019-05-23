@@ -269,6 +269,7 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 	@Override
 	public List<TrainWarning> getTrainApproachingCreateStatus() {
 		TrainWarning trainWarning = new TrainWarning();
+		trainWarning.setType(TrainWarning.TYPE_TRAIN_APPROACHING);
 		trainWarning.setStatus(TrainWarning.STATUS_CREATE);
 
 		return trainWarningDAO.queryList(trainWarning);
