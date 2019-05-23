@@ -48,5 +48,10 @@ public interface TrainWarningService extends IBaseService<TrainWarning, String> 
      */
     void finishTrainApproachingWarning(String id, String currentRcRspId);
 
+    /**
+     * 查询创建状态列车接近
+     */
+    List<TrainWarning> getTrainApproachingCreateStatus();
+
 	
 }

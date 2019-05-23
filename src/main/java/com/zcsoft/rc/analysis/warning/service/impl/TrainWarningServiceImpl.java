@@ -265,4 +265,12 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 			trainApproachingMap.remove(id);
 		}
 	}
+
+	@Override
+	public List<TrainWarning> getTrainApproachingCreateStatus() {
+		TrainWarning trainWarning = new TrainWarning();
+		trainWarning.setStatus(TrainWarning.STATUS_CREATE);
+
+		return trainWarningDAO.queryList(trainWarning);
+	}
 }

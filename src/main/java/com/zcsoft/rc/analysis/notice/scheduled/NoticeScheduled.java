@@ -1,8 +1,10 @@
 package com.zcsoft.rc.analysis.notice.scheduled;
 
 import com.zcsoft.rc.analysis.notice.service.NoticeService;
+import com.zcsoft.rc.analysis.warning.service.TrainWarningService;
 import com.zcsoft.rc.analysis.warning.service.WorkWarningService;
 import com.zcsoft.rc.notice.model.entity.Notice;
+import com.zcsoft.rc.warning.model.entity.TrainWarning;
 import com.zcsoft.rc.warning.model.entity.WorkWarning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ public class NoticeScheduled {
     private ThreadPoolTaskExecutor workThreadPoolTaskExecutor;
     private NoticeService noticeService;
     private WorkWarningService workWarningService;
+    private TrainWarningService trainWarningService;
 
     @Resource
     public void setWorkThreadPoolTaskExecutor(ThreadPoolTaskExecutor workThreadPoolTaskExecutor) {
@@ -35,6 +38,10 @@ public class NoticeScheduled {
     @Resource
     public void setWorkWarningService(WorkWarningService workWarningService) {
         this.workWarningService = workWarningService;
+    }
+    @Resource
+    public void setTrainWarningService(TrainWarningService trainWarningService) {
+        this.trainWarningService = trainWarningService;
     }
 
     @Scheduled(fixedRate = 1000*1)
@@ -62,7 +69,7 @@ public class NoticeScheduled {
         }
     }
 
-    @Scheduled(fixedRate = 1000*60*3)
+    @Scheduled(fixedRate = 1000*60*2)
     public synchronized void addWorkWarningNotice() {
         List<WorkWarning> workWarningList = workWarningService.getCreateStatus();
 
@@ -79,6 +86,24 @@ public class NoticeScheduled {
             });
         }
 
+    }
+
+    @Scheduled(fixedRate = 1000*60*2)
+    public synchronized void addTrainApproachingNotice() {
+        List<TrainWarning> trainWarningList = trainWarningService.getTrainApproachingCreateStatus();
+
+        if(trainWarningList == null || trainWarningList.isEmpty()) {
+            return;
+        }
+
+        for(TrainWarning trainWarning : trainWarningList) {
+            workThreadPoolTaskExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    noticeService.addTrainWarningNotice(trainWarning);
+                }
+            });
+        }
     }
 
 }
