@@ -119,7 +119,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		int numberAlarmadvanceStations = sysParameterService.getNumberAlarmadvanceStations();
 
 		workSegmentList.forEach(workSegment -> {
-			RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(workSegment.getStartLongitude());
+			RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(workSegment.getStartLongitude(), workSegment.getEndLongitude());
 
 			if(railwayLines == null) {
 				return;
@@ -236,7 +236,7 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 	}
 
 	protected TrainDirection initDirection(String id, Coordinates coordinates) {
-		RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(coordinates.getLongitude());
+		RailwayLines railwayLines = railwayLinesDAO.queryByStartLongitudeEndLongitude(coordinates.getLongitude(), null);
 
 		if(railwayLines == null) {
 			logger.error("init direction railwayLines is null,coordinates:{}", coordinates);
