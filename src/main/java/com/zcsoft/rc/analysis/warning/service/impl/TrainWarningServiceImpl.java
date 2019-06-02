@@ -230,10 +230,10 @@ public class TrainWarningServiceImpl extends BaseServiceImpl<TrainWarning, Strin
 			}
 		}
 
-		if(temporaryStation.get(currentRcRsp.getId()) == null) {
+		if(temporaryStation.get(id) == null) {
 			noticeService.addTrainWarningNotice(temporaryStation.getTrainWarning());
 
-			addWarning(currentRcRsp.getId(), temporaryStation.getTrainWarning());
+			addWarning(id, temporaryStation.getTrainWarning());
 
 			temporaryStation.put(currentRcRsp.getId());
 		} else {
