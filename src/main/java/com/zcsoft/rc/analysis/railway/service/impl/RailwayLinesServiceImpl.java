@@ -168,8 +168,8 @@ public class RailwayLinesServiceImpl extends BaseServiceImpl<RailwayLines, Strin
 		WorkSegmentRailwayLine workSegmentRailwayLine = getWarningRailwayLines(trainCurrentRcRsp, direction);
 
 		if(workSegmentRailwayLine == null) {
-			logger.info("work segment railway lines is null, rcRsp:{}", trainCurrentRcRsp);
-			trainWarningService.finishTemporaryStationWarning(trainCurrentRcRsp.getId());
+			logger.info("work segment railway lines is null, rcRsp:{}", currentRcRsp);
+			trainWarningService.finishTemporaryStationWarning(currentRcRsp.getId());
 			return;
 		}
 
