@@ -3,6 +3,7 @@ package com.zcsoft.rc.analysis.cable.service.impl;
 import com.sharingif.cube.core.util.StringUtils;
 import com.zcsoft.rc.analysis.cable.dao.CableDAO;
 import com.zcsoft.rc.analysis.cable.dao.CablePolygonDAO;
+import com.zcsoft.rc.analysis.cable.dao.SafetyZoneDAO;
 import com.zcsoft.rc.analysis.cable.model.entity.CableBuild;
 import com.zcsoft.rc.analysis.cable.service.CableService;
 import com.zcsoft.rc.analysis.machinery.service.MachineryService;
@@ -24,6 +25,7 @@ public class CableServiceImpl implements CableService {
 
     private CableDAO cableDAO;
     private CablePolygonDAO cablePolygonDAO;
+    private SafetyZoneDAO safetyZoneDAO;
 
     private SysParameterService sysParameterService;
     private MachineryService machineryService;
@@ -36,6 +38,10 @@ public class CableServiceImpl implements CableService {
     @Resource
     public void setCablePolygonDAO(CablePolygonDAO cablePolygonDAO) {
         this.cablePolygonDAO = cablePolygonDAO;
+    }
+    @Resource
+    public void setSafetyZoneDAO(SafetyZoneDAO safetyZoneDAO) {
+        this.safetyZoneDAO = safetyZoneDAO;
     }
     @Resource
     public void setSysParameterService(SysParameterService sysParameterService) {
@@ -93,6 +99,19 @@ public class CableServiceImpl implements CableService {
         }
     }
 
+    /**
+     * 处理安全区域
+     */
+    protected boolean safetyZone(CurrentRcRsp currentRcRsp) {
+        String nearDataId = safetyZoneDAO.intersects("geometry", currentRcRsp.getLongitude(), currentRcRsp.getLatitude());
+
+        if(StringUtils.isTrimEmpty(nearDataId)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public void analysis(CurrentRcRsp currentRcRsp) {
 
@@ -105,6 +124,12 @@ public class CableServiceImpl implements CableService {
         String typeRollingAlarmMachinery = sysParameterService.getTypeRollingAlarmMachinery();
 
         if(!typeRollingAlarmMachinery.equals(machinery.getMachineryType())) {
+            return;
+        }
+
+        // 如果在安全区域内消除警告并返回
+        if(safetyZone(currentRcRsp)) {
+            workWarningService.finishCableWarning(currentRcRsp.getId());
             return;
         }
 
